@@ -21,6 +21,7 @@ export function WindowFrame({ win }: { win: WindowState }) {
     setBounds,
     applySnap,
     setSnapPreview,
+    openMenu,
   } = useOS();
 
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
@@ -99,10 +100,12 @@ export function WindowFrame({ win }: { win: WindowState }) {
         "window" +
         (isFocused ? " is-focused" : "") +
         (win.maximized ? " is-max" : "") +
+        (win.minimized ? " is-minimized" : "") +
         (interacting ? " is-interacting" : "")
       }
       style={{ left: win.x, top: win.y, width: win.width, height: win.height, zIndex: win.z }}
       onPointerDown={() => focusWindow(win.id)}
+      onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
       role="dialog"
       aria-label={meta?.name}
     >
@@ -113,6 +116,16 @@ export function WindowFrame({ win }: { win: WindowState }) {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         onDoubleClick={() => toggleMaximize(win.id)}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openMenu(e.clientX, e.clientY, [
+            { label: "Minimize", icon: "minimize", onSelect: () => minimizeWindow(win.id) },
+            { label: win.maximized ? "Restore" : "Maximize", icon: "maximize", onSelect: () => toggleMaximize(win.id) },
+            { separator: true },
+            { label: "Close", icon: "close", danger: true, onSelect: () => closeWindow(win.id) },
+          ]);
+        }}
       >
         <span className="window-title">
           {meta && <Icon name={meta.icon} size={14} />}

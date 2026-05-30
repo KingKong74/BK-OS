@@ -145,6 +145,44 @@ const PATHS: Record<IconName, ReactNode> = {
       <line x1="7" y1="16.5" x2="7.01" y2="16.5" />
     </>
   ),
+  taskview: (
+    <>
+      <rect x="3" y="4" width="8" height="16" rx="1" />
+      <rect x="13" y="4" width="8" height="11" rx="1" />
+    </>
+  ),
+  power: (
+    <>
+      <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+      <line x1="12" y1="2" x2="12" y2="12" />
+    </>
+  ),
+  refresh: (
+    <>
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+      <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14" />
+    </>
+  ),
+  qr: (
+    <>
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="3" height="3" />
+      <rect x="18" y="14" width="3" height="3" />
+      <rect x="14" y="18" width="3" height="3" />
+      <rect x="18" y="18" width="3" height="3" />
+    </>
+  ),
+  "external-link": (
+    <>
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </>
+  ),
 };
 
 export function Icon({

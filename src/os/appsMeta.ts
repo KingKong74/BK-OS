@@ -14,6 +14,7 @@ export const APPS: AppMeta[] = [
   { id: "music", name: "Music", icon: "music", accent: "#FBEAF0", accentFg: "#4B1528", pinned: true, defaultSize: { width: 420, height: 320 } },
   { id: "notes", name: "Notes", icon: "notes", accent: "#FAEEDA", accentFg: "#633806", defaultSize: { width: 560, height: 460 } },
   { id: "settings", name: "Settings", icon: "settings", accent: "#F1EFE8", accentFg: "#2C2C2A", pinned: true, defaultSize: { width: 560, height: 460 } },
+  { id: "moniqr", name: "moniqr", icon: "qr", accent: "#FBEAF0", accentFg: "#4B1528", pinned: true, defaultSize: { width: 980, height: 680 }, url: "https://moniqr.com" },
 ];
 
 export const APP_MAP: Record<string, AppMeta> = Object.fromEntries(

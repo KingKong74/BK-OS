@@ -7,7 +7,10 @@
 :root,
 [data-scene="modern"] {
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --wallpaper: linear-gradient(160deg, #eef2f7 0%, #dfe5ee 100%);
+  --wallpaper:
+    radial-gradient(60% 50% at 0% 0%, rgba(208, 220, 246, 0.75) 0%, transparent 60%),
+    radial-gradient(60% 55% at 100% 100%, rgba(231, 219, 242, 0.65) 0%, transparent 60%),
+    linear-gradient(180deg, #eff3f8 0%, #e0e6ef 100%);
   --surface: #ffffff;
   --surface-2: #f4f6f8;
   --text: #1b1d21;
@@ -199,10 +202,219 @@
 [data-scene="win98"] .snap-preview { background: rgba(0, 0, 128, 0.18); }
 
 /* Retro tweaks for desktop icons + explorer */
-[data-scene="win98"] .desktop-icon-label { color: #ffffff; }
+[data-scene="win98"] .desktop-icon-label { color: #ffffff; text-shadow: 1px 1px 0 #000000; }
 [data-scene="win98"] .desktop-icon-tile,
 [data-scene="win98"] .exp-image { border-radius: 0; }
 [data-scene="win98"] .exp-nav button,
 [data-scene="win98"] .exp-viewbtn,
 [data-scene="win98"] .exp-search { border-radius: 0; }
 [data-scene="win98"] .desktop-icon.is-selected { background: rgba(0, 0, 128, 0.35); border-color: transparent; }
+
+/* Retro context menu */
+[data-scene="win98"] .ctx-menu {
+  border-radius: 0;
+  border: none;
+  padding: 2px;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #ffffff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .ctx-item { border-radius: 0; }
+[data-scene="win98"] .ctx-item:hover:not(:disabled) { background: #000080; color: #ffffff; }
+[data-scene="win98"] .ctx-item:hover:not(:disabled) .ctx-icon { color: #ffffff; }
+[data-scene="win98"] .ctx-item.is-danger:hover:not(:disabled) { color: #ffffff; }
+
+/* Retro: dock search, task view, toggle */
+[data-scene="win98"] .dock-search {
+  border-radius: 0;
+  border: 1px solid #0a0a0a;
+  background: #ffffff;
+  box-shadow: inset 1px 1px #808080;
+}
+[data-scene="win98"] .dock-taskview { border-radius: 0; }
+[data-scene="win98"] .dock-taskview:hover {
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .taskview-card {
+  border-radius: 0;
+  border: none;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .taskview-thumb { border-radius: 0; }
+[data-scene="win98"] .toggle { border-radius: 0; box-shadow: inset 1px 1px #808080, inset -1px -1px #ffffff; }
+[data-scene="win98"] .toggle-knob {
+  border-radius: 0;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+
+/* Retro: launcher power footer + lock/powered-off screens */
+[data-scene="win98"] .launcher-power button {
+  border-radius: 0;
+  border: none;
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .launcher-power button:hover { background: #c0c0c0; }
+[data-scene="win98"] .lock-screen { background: #008080; }
+[data-scene="win98"] .lock-clock { font-weight: 400; }
+
+/* Retro: web app chrome */
+[data-scene="win98"] .web-app-bar { background: #c0c0c0; border-bottom: 1px solid #808080; }
+
+/* ---------------- Dark ---------------- */
+[data-scene="dark"] {
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --wallpaper:
+    radial-gradient(70% 60% at 0% 0%, rgba(58, 78, 130, 0.45) 0%, transparent 60%),
+    radial-gradient(70% 55% at 100% 100%, rgba(96, 58, 130, 0.4) 0%, transparent 60%),
+    linear-gradient(180deg, #0f1218 0%, #14171f 100%);
+  --surface: #1a1d23;
+  --surface-2: #242831;
+  --text: #e6e8ec;
+  --text-dim: #8b919b;
+  --border: #2e333c;
+  --radius: 12px;
+  --accent: #6fa8ff;
+
+  --menubar-bg: rgba(20, 23, 28, 0.78);
+  --menubar-text: #e6e8ec;
+
+  --titlebar-bg: #1f2329;
+  --titlebar-text: #e6e8ec;
+  --titlebar-bg-inactive: #181b21;
+  --titlebar-text-inactive: #6c727b;
+
+  --dock-bg: rgba(20, 23, 28, 0.72);
+  --dock-border: 1px solid #2e333c;
+
+  --window-border: 1px solid #2e333c;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-focused: 0 18px 50px rgba(0, 0, 0, 0.65);
+
+  --control-bg: #2a2f37;
+  --control-hover: #353a44;
+}
+
+[data-scene="dark"] .menubar { backdrop-filter: saturate(1.2) blur(12px); }
+[data-scene="dark"] .dock { backdrop-filter: saturate(1.2) blur(14px); }
+
+/* ---------------- Classic Mac (System 7 / OS 9 platinum) ---------------- */
+[data-scene="classic-mac"] {
+  --font: "Chicago", "Charcoal", "Geneva", -apple-system, BlinkMacSystemFont, sans-serif;
+  --wallpaper:
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.018) 0 2px, transparent 2px 6px),
+    #c9c9cb;
+  --surface: #dcdcdc;
+  --surface-2: #c8c8c8;
+  --text: #000000;
+  --text-dim: #5a5a5a;
+  --border: #000000;
+  --radius: 0;
+  --accent: #2a4d9b;
+
+  --menubar-bg: #ffffff;
+  --menubar-text: #000000;
+
+  --titlebar-bg: repeating-linear-gradient(180deg, #b7b7b7 0px, #b7b7b7 1px, #e2e2e2 1px, #e2e2e2 2px);
+  --titlebar-text: #000000;
+  --titlebar-bg-inactive: #ededed;
+  --titlebar-text-inactive: #909090;
+
+  --dock-bg: #dcdcdc;
+  --dock-border: 1px solid #000000;
+
+  --window-border: 1px solid #000000;
+  --shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+  --shadow-focused: 3px 3px 0 rgba(0, 0, 0, 0.55);
+
+  --control-bg: #dcdcdc;
+  --control-hover: #c0c0c0;
+}
+
+[data-scene="classic-mac"] .menubar { border-bottom: 1px solid #000; font-weight: 700; }
+[data-scene="classic-mac"] .window-titlebar {
+  justify-content: center;
+  position: relative;
+  border-bottom: 1px solid #000;
+}
+[data-scene="classic-mac"] .window-controls {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+[data-scene="classic-mac"] .window-title {
+  background: #dcdcdc;
+  padding: 0 10px;
+  border: 1px solid #000;
+  border-radius: 0;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+}
+[data-scene="classic-mac"] .window-controls button {
+  width: 14px;
+  height: 14px;
+  border-radius: 0;
+  background: #dcdcdc;
+  border: 1px solid #000;
+  color: #000;
+}
+[data-scene="classic-mac"] .window-controls .ctl-close:hover { background: #c0c0c0; color: #000; }
+[data-scene="classic-mac"] .desktop-icon-label { text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+
+/* ---------------- Terminal ---------------- */
+[data-scene="terminal"] {
+  --font: "Menlo", "Monaco", "Cascadia Code", "Consolas", "Courier New", monospace;
+  --wallpaper:
+    radial-gradient(80% 60% at 50% 40%, rgba(76, 243, 137, 0.05) 0%, transparent 60%),
+    #050708;
+  --surface: #0a0d10;
+  --surface-2: #131820;
+  --text: #4cf389;
+  --text-dim: #2e8b5c;
+  --border: #1f3b2c;
+  --radius: 0;
+  --accent: #4cf389;
+
+  --menubar-bg: #000000;
+  --menubar-text: #4cf389;
+
+  --titlebar-bg: #000000;
+  --titlebar-text: #4cf389;
+  --titlebar-bg-inactive: #000000;
+  --titlebar-text-inactive: #1f6b48;
+
+  --dock-bg: #000000;
+  --dock-border: 1px solid #1f3b2c;
+
+  --window-border: 1px solid #1f3b2c;
+  --shadow: 0 0 0 1px #1f3b2c;
+  --shadow-focused: 0 0 0 1px #4cf389, 0 0 22px rgba(76, 243, 137, 0.18);
+
+  --control-bg: transparent;
+  --control-hover: rgba(76, 243, 137, 0.12);
+}
+
+[data-scene="terminal"] .menubar { border-bottom: 1px solid #1f3b2c; letter-spacing: 0.5px; }
+[data-scene="terminal"] .menubar-vpn { color: #4cf389; }
+[data-scene="terminal"] .window-titlebar { border-bottom: 1px solid #1f3b2c; }
+[data-scene="terminal"] .window-controls .ctl-close:hover { background: rgba(243, 76, 76, 0.18); color: #ff7878; }
+[data-scene="terminal"] .desktop-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(76, 243, 137, 0.05) 0 1px, transparent 1px 3px);
+  z-index: 10000;
+}
+[data-scene="terminal"] .web-app-frame { background: #fff; }
+
+/* Lock screen colour per scene */
+[data-scene="classic-mac"] .lock-screen { background: #dcdcdc; color: #000; }
+[data-scene="classic-mac"] .lock-clock { font-weight: 400; letter-spacing: 0; }
+[data-scene="terminal"] .lock-screen { background: #000; color: var(--accent); }
+[data-scene="terminal"] .lock-clock { letter-spacing: 2px; font-weight: 400; }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useOS } from "@/os/store";
 import { Icon } from "./Icon";
 import {
   VFS_ROOT,
@@ -32,6 +33,8 @@ export function Explorer({ initialPath = [] as string[] }: { initialPath?: strin
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+
+  const openMenu = useOS((s) => s.openMenu);
 
   const current = nodeAtPath(path);
   const entries = useMemo(() => {
@@ -67,6 +70,19 @@ export function Explorer({ initialPath = [] as string[] }: { initialPath?: strin
   const open = (entry: FsNode) => {
     if (entry.type === "folder") navigate([...path, entry.name]);
     else setSelected(entry.name);
+  };
+
+  const entryMenu = (e: React.MouseEvent, entry: FsNode) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelected(entry.name);
+    openMenu(e.clientX, e.clientY, [
+      { label: "Open", icon: entry.type === "folder" ? "folder" : fileIcon(entry.kind), onSelect: () => open(entry) },
+      { separator: true },
+      { label: "Download", icon: "file", disabled: entry.type !== "file" },
+      { label: "Rename", disabled: true },
+      { label: "Delete", danger: true, disabled: true },
+    ]);
   };
 
   const crumbs = ["Vault", ...path];
@@ -120,6 +136,7 @@ export function Explorer({ initialPath = [] as string[] }: { initialPath?: strin
                   className={"exp-tile" + (selected === e.name ? " is-selected" : "")}
                   onClick={() => setSelected(e.name)}
                   onDoubleClick={() => open(e)}
+                  onContextMenu={(ev) => entryMenu(ev, e)}
                 >
                   <span className="exp-thumb">
                     {e.type === "folder" ? (
@@ -139,6 +156,7 @@ export function Explorer({ initialPath = [] as string[] }: { initialPath?: strin
                   className={"exp-row" + (selected === e.name ? " is-selected" : "")}
                   onClick={() => setSelected(e.name)}
                   onDoubleClick={() => open(e)}
+                  onContextMenu={(ev) => entryMenu(ev, e)}
                 >
                   <span className="exp-row-name">
                     <Icon name={e.type === "folder" ? "folder" : fileIcon(e.kind)} size={16} />

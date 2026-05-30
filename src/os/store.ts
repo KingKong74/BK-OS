@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { APP_MAP } from "./appsMeta";
+import { APP_MAP, APPS } from "./appsMeta";
 import { boundsForZone } from "./snap";
-import { MENUBAR_H, DOCK_RESERVED, type SceneId, type SnapZone, type WindowState } from "./types";
+import { MENUBAR_H, DOCK_RESERVED, type MenuItem, type MenuState, type SceneId, type SnapZone, type WindowState } from "./types";
 
 let idCounter = 0;
 const newId = () => `w${Date.now().toString(36)}-${(idCounter++).toString(36)}`;
@@ -14,10 +14,30 @@ interface OSState {
   zCounter: number;
   launcherOpen: boolean;
   snapPreview: SnapZone | null;
+  menu: MenuState | null;
+  iconPositions: Record<string, { x: number; y: number }>;
+  gridSnap: boolean;
+  pinnedApps: string[];
+  taskViewOpen: boolean;
+  locked: boolean;
+  poweredOff: boolean;
 
   setScene: (scene: SceneId) => void;
   toggleLauncher: (open?: boolean) => void;
   setSnapPreview: (zone: SnapZone | null) => void;
+  openMenu: (x: number, y: number, items: MenuItem[]) => void;
+  closeMenu: () => void;
+  setIconPosition: (id: string, x: number, y: number) => void;
+  resetIconPositions: () => void;
+  setGridSnap: (on: boolean) => void;
+  togglePin: (id: string) => void;
+  setPinnedOrder: (ids: string[]) => void;
+  toggleTaskView: (open?: boolean) => void;
+  lock: () => void;
+  unlock: () => void;
+  shutdown: () => void;
+  powerOn: () => void;
+  restart: () => void;
 
   openApp: (appId: string) => void;
   closeWindow: (id: string) => void;
@@ -44,11 +64,44 @@ export const useOS = create<OSState>()(
       zCounter: 1,
       launcherOpen: false,
       snapPreview: null,
+      menu: null,
+      iconPositions: {},
+      gridSnap: true,
+      pinnedApps: APPS.filter((a) => a.pinned).map((a) => a.id),
+      taskViewOpen: false,
+      locked: false,
+      poweredOff: false,
 
       setScene: (scene) => set({ scene }),
       toggleLauncher: (open) =>
         set((s) => ({ launcherOpen: open ?? !s.launcherOpen })),
       setSnapPreview: (zone) => set({ snapPreview: zone }),
+      openMenu: (x, y, items) => set({ menu: { x, y, items } }),
+      closeMenu: () => set({ menu: null }),
+      setIconPosition: (id, x, y) =>
+        set((s) => ({
+          iconPositions: { ...s.iconPositions, [id]: { x: Math.max(0, x), y: Math.max(MENUBAR_H + 4, y) } },
+        })),
+      resetIconPositions: () => set({ iconPositions: {} }),
+      setGridSnap: (on) => set({ gridSnap: on }),
+      togglePin: (id) =>
+        set((s) => ({
+          pinnedApps: s.pinnedApps.includes(id)
+            ? s.pinnedApps.filter((p) => p !== id)
+            : [...s.pinnedApps, id],
+        })),
+      setPinnedOrder: (ids) => set({ pinnedApps: ids }),
+      toggleTaskView: (open) =>
+        set((s) => ({ taskViewOpen: open ?? !s.taskViewOpen })),
+      lock: () => set({ locked: true, launcherOpen: false, menu: null, taskViewOpen: false }),
+      unlock: () => set({ locked: false }),
+      shutdown: () =>
+        set({ poweredOff: true, launcherOpen: false, menu: null, taskViewOpen: false, locked: false }),
+      powerOn: () => set({ poweredOff: false }),
+      restart: () => {
+        set({ poweredOff: false, locked: false, launcherOpen: false, menu: null, taskViewOpen: false });
+        if (typeof window !== "undefined") window.location.reload();
+      },
 
       openApp: (appId) => {
         const meta = APP_MAP[appId];
@@ -213,6 +266,10 @@ export const useOS = create<OSState>()(
         windows: s.windows,
         focusedId: s.focusedId,
         zCounter: s.zCounter,
+        iconPositions: s.iconPositions,
+        gridSnap: s.gridSnap,
+        pinnedApps: s.pinnedApps,
+        poweredOff: s.poweredOff,
       }),
     }
   )

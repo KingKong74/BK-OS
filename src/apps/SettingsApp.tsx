@@ -5,12 +5,17 @@ import type { SceneId } from "@/os/types";
 
 const SCENES: { id: SceneId; name: string; blurb: string }[] = [
   { id: "modern", name: "Modern", blurb: "Clean, flat, rounded — the default look." },
+  { id: "dark", name: "Dark", blurb: "Same shapes, dimmed for night." },
+  { id: "classic-mac", name: "Classic Mac", blurb: "Platinum greys and ribbed title bars." },
+  { id: "terminal", name: "Terminal", blurb: "Green-on-black, monospace, glowing." },
   { id: "win98", name: "Retro 98", blurb: "Beveled grey chrome and a teal desktop." },
 ];
 
 export function SettingsApp() {
   const scene = useOS((s) => s.scene);
   const setScene = useOS((s) => s.setScene);
+  const gridSnap = useOS((s) => s.gridSnap);
+  const setGridSnap = useOS((s) => s.setGridSnap);
 
   return (
     <div className="settings-app">
@@ -32,6 +37,23 @@ export function SettingsApp() {
           </button>
         ))}
       </div>
+
+      <h2 style={{ marginTop: "26px" }}>Desktop</h2>
+      <label className="settings-row">
+        <span>
+          <span className="settings-row-title">Align icons to a grid</span>
+          <span className="settings-row-desc">Keep desktop icons locked to a tidy grid formation.</span>
+        </span>
+        <button
+          className={"toggle" + (gridSnap ? " is-on" : "")}
+          role="switch"
+          aria-checked={gridSnap}
+          onClick={() => setGridSnap(!gridSnap)}
+        >
+          <span className="toggle-knob" />
+        </button>
+      </label>
+
       <p className="settings-hint">
         Add more scenes in <code>src/scenes/scenes.css</code> and the list in{" "}
         <code>SettingsApp.tsx</code>.

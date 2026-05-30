@@ -1,4 +1,4 @@
-export type SceneId = "modern" | "win98";
+export type SceneId = "modern" | "dark" | "classic-mac" | "terminal" | "win98";
 
 export type IconName =
   | "lock"
@@ -23,7 +23,12 @@ export type IconName =
   | "chevron-right"
   | "file"
   | "list"
-  | "server";
+  | "server"
+  | "taskview"
+  | "power"
+  | "refresh"
+  | "qr"
+  | "external-link";
 
 export interface AppMeta {
   id: string;
@@ -36,6 +41,8 @@ export interface AppMeta {
   defaultSize?: { width: number; height: number };
   /** show in the dock's pinned area */
   pinned?: boolean;
+  /** if set, the app is a web view that loads this URL in an iframe */
+  url?: string;
 }
 
 export type SnapZone = "left" | "right" | "max" | "tl" | "tr" | "bl" | "br";
@@ -60,3 +67,18 @@ export interface WindowState {
 export const MENUBAR_H = 30;
 /** Vertical space reserved for the dock when maximizing, in px. */
 export const DOCK_RESERVED = 76;
+
+export interface MenuItem {
+  label?: string;
+  icon?: IconName;
+  onSelect?: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+  separator?: boolean;
+}
+
+export interface MenuState {
+  x: number;
+  y: number;
+  items: MenuItem[];
+}
