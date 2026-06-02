@@ -1,16 +1,19 @@
 "use client";
 
 import { useOS } from "@/os/store";
-import { Icon } from "./Icon";
 
 export function PoweredOff() {
   const powerOn = useOS((s) => s.powerOn);
   return (
-    <div className="powered-off">
-      <button className="power-btn" onClick={powerOn} aria-label="Power on">
-        <Icon name="power" size={40} />
-      </button>
-      <div className="power-text">Press to power on</div>
+    <div className="powered-off" onClick={powerOn}>
+      <div className="powered-off-screen">
+        <div className="powered-off-message">
+          It&rsquo;s now safe to turn off
+          <br />
+          your computer.
+        </div>
+        <div className="powered-off-hint">click anywhere to power on</div>
+      </div>
     </div>
   );
 }

@@ -38,6 +38,7 @@ interface OSState {
   clipboard: { kind: "app-shortcut"; appId: string; label?: string } | null;
   notepadInitial: { path: string[]; name: string } | null;
   restartPhase: "off" | "bios" | "matrix";
+  shutdownPhase: "off" | "running";
 
   setScene: (scene: SceneId) => void;
   toggleLauncher: (open?: boolean) => void;
@@ -79,6 +80,8 @@ interface OSState {
   requestOpenInNotepad: (path: string[], name: string) => void;
   sleep: () => void;
   setRestartPhase: (phase: OSState["restartPhase"]) => void;
+  setShutdownPhase: (phase: OSState["shutdownPhase"]) => void;
+  finishShutdown: () => void;
 
   openApp: (appId: string) => void;
   closeWindow: (id: string) => void;
@@ -131,6 +134,7 @@ export const useOS = create<OSState>()(
       clipboard: null,
       notepadInitial: null,
       restartPhase: "off",
+      shutdownPhase: "off",
 
       setScene: (scene) => set({ scene }),
       toggleLauncher: (open) =>
@@ -156,8 +160,17 @@ export const useOS = create<OSState>()(
       lock: () => set({ locked: true, launcherOpen: false, menu: null, taskViewOpen: false }),
       unlock: () => set({ locked: false, restartPhase: "off" }),
       shutdown: () =>
-        set({ poweredOff: true, launcherOpen: false, menu: null, taskViewOpen: false, locked: false }),
-      powerOn: () => set({ poweredOff: false }),
+        set({
+          shutdownPhase: "running",
+          windows: [],
+          focusedId: null,
+          launcherOpen: false,
+          menu: null,
+          taskViewOpen: false,
+          locked: true, // clear auth — once powered back on, must sign in
+        }),
+      finishShutdown: () => set({ poweredOff: true, shutdownPhase: "off" }),
+      powerOn: () => set({ poweredOff: false, locked: true, restartPhase: "off", shutdownPhase: "off" }),
       sleep: () => set({ locked: true, launcherOpen: false, menu: null, taskViewOpen: false }),
       restart: () => {
         // Novelty reboot: close everything, kick off the BIOS phase. The
@@ -171,9 +184,11 @@ export const useOS = create<OSState>()(
           locked: true,
           poweredOff: false,
           restartPhase: "bios",
+          shutdownPhase: "off",
         });
       },
       setRestartPhase: (phase) => set({ restartPhase: phase }),
+      setShutdownPhase: (phase) => set({ shutdownPhase: phase }),
       setVaultInitialPath: (path) => set({ vaultInitialPath: path }),
 
       addNote: (x, y) =>

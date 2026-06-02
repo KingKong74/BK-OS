@@ -25,16 +25,20 @@ export function LockScreen() {
   return (
     <div
       className={"lock-screen" + (isMatrix ? " is-matrix" : "")}
-      onClick={unlock}
-      role="button"
-      aria-label="Unlock"
+      role="dialog"
+      aria-modal="true"
     >
-      {isMatrix && <div className="lock-matrix-shell">BAILEY · LOGGED OUT</div>}
+      {isMatrix && <div className="lock-matrix-shell">BAILEY &middot; LOGGED OUT</div>}
       <div className="lock-clock">{time}</div>
       <div className="lock-date">{date}</div>
-      <div className="lock-hint">
-        {isMatrix ? "Click anywhere to sign back in" : "Click to unlock"}
-      </div>
+      <button
+        type="button"
+        className={"lock-signin-btn" + (isMatrix ? " is-matrix" : "")}
+        onClick={(e) => { e.stopPropagation(); unlock(); }}
+      >
+        {isMatrix ? "[  SIGN IN  ]" : "Unlock"}
+      </button>
+      {isMatrix && <div className="lock-hint">Click SIGN IN to authenticate Bailey</div>}
     </div>
   );
 }

@@ -269,7 +269,6 @@ input {
   gap: 4px;
   align-content: start;
 }
-.launcher-grid-pinned { grid-template-columns: repeat(8, 1fr); gap: 6px 2px; }
 .launcher-app {
   border: none;
   background: transparent;
@@ -277,16 +276,17 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
   color: var(--text);
-  padding: 8px 4px;
+  padding: 10px 4px;
   border-radius: 8px;
-  min-height: 76px;
+  height: 92px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .launcher-app:hover { background: var(--surface-2); }
-.launcher-app.is-big { padding: 10px 4px; min-height: 86px; }
-.launcher-app.is-big .launcher-tile { width: 50px; height: 50px; }
-.launcher-tile { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.launcher-tile { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .launcher-name {
   font-size: 11px;
   color: var(--text-dim);
@@ -297,6 +297,9 @@ input {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  width: 100%;
+  padding: 0 2px;
+  box-sizing: border-box;
 }
 
 /* Bottom-left icon row */
@@ -336,6 +339,11 @@ input {
   justify-content: center;
   font-weight: 600;
   font-size: 12px;
+}
+.launcher-fb-profile svg {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 .launcher-power-wrapper { position: relative; }
@@ -633,11 +641,10 @@ input {
   justify-content: center;
   gap: 6px;
   font-family: var(--font);
-  cursor: pointer;
 }
 .lock-clock { font-size: 88px; font-weight: 200; letter-spacing: -2px; line-height: 1; }
 .lock-date { font-size: 18px; opacity: 0.85; margin-top: 8px; }
-.lock-hint { margin-top: 36px; font-size: 13px; opacity: 0.6; }
+.lock-hint { margin-top: 18px; font-size: 13px; opacity: 0.6; }
 
 /* ---------- Powered off ---------- */
 .powered-off {
@@ -647,27 +654,72 @@ input {
   background: #000;
   color: #fff;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  font-family: var(--font);
-}
-.power-btn {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  background: transparent;
-  color: #fff;
+  font-family: "Lucida Console", "Consolas", "Courier New", monospace;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.15s ease, background 0.15s ease;
 }
-.power-btn:hover { border-color: #fff; background: rgba(255, 255, 255, 0.06); }
-.power-text { color: rgba(255, 255, 255, 0.65); font-size: 13px; }
+.powered-off-screen {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.powered-off-message {
+  font-size: 24px;
+  color: #ffa500;
+  letter-spacing: 1px;
+  line-height: 1.45;
+  text-shadow: 0 0 14px rgba(255, 165, 0, 0.35);
+}
+.powered-off-hint {
+  font-size: 11px;
+  color: rgba(255, 165, 0, 0.55);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ============ Shutdown sequence (BSOD + CRT collapse) ============ */
+.shutdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483700;
+  pointer-events: auto;
+  background: #000;
+  overflow: hidden;
+}
+.shutdown-screen {
+  position: absolute;
+  inset: 0;
+  background: #0000aa;
+  color: #fff;
+  font-family: "Lucida Console", "Consolas", "Courier New", monospace;
+  font-size: 14px;
+  padding: 36px 44px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.025) 0px,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  background-color: #0000aa;
+  transform-origin: center center;
+  transition: transform 1.2s cubic-bezier(0.55, 0, 0.1, 1), opacity 0.3s ease 0.95s;
+}
+.shutdown-overlay.is-collapsing .shutdown-screen {
+  /* Collapse to a horizontal scanline, then a dot, then black — the iconic CRT shutoff */
+  animation: crt-collapse 1.2s cubic-bezier(0.55, 0, 0.1, 1) forwards;
+  background: #fff;
+  background-image: none;
+}
+@keyframes crt-collapse {
+  0%   { transform: scale(1, 1);          opacity: 1; background: #fff; }
+  35%  { transform: scale(1, 1);          opacity: 1; background: #fff; }
+  60%  { transform: scale(1, 0.015);      opacity: 1; background: #fff; }
+  85%  { transform: scale(0.0025, 0.015); opacity: 1; background: #fff; }
+  100% { transform: scale(0.0025, 0.015); opacity: 0; background: #fff; }
+}
 
 /* ---------- Launcher power footer ---------- */
 .launcher-power { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
@@ -1432,38 +1484,48 @@ input:focus-visible,
   padding-left: 4px;
 }
 
-/* ============ Restart sequence (BIOS + Matrix) ============ */
+/* ============ Restart sequence (Blue Screen + Matrix) ============ */
 .reboot-overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
 }
-.reboot-bios {
+.reboot-bsod {
   z-index: 2147483600;
-  background: #000;
+  background: #0000aa; /* classic NT blue */
   pointer-events: auto;
   overflow: hidden;
   font-family: "Lucida Console", "Consolas", "Courier New", monospace;
-  font-size: 13px;
-  color: #c5c8c6;
-  padding: 22px 28px;
-  transition: opacity 1.4s ease;
+  font-size: 14px;
+  color: #ffffff;
+  padding: 36px 44px;
+  /* Slow, deliberate fade so the matrix can creep in over the top */
+  transition: opacity 3.2s ease-in-out;
+  /* Subtle CRT-ish horizontal scanlines */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.025) 0px,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  background-color: #0000aa;
 }
-.reboot-bios.is-fading-out { opacity: 0; pointer-events: none; }
-.reboot-bios .reboot-frame {
+.reboot-bsod.is-fading-out { opacity: 0; pointer-events: none; }
+.reboot-bsod .reboot-frame {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 .reboot-line { white-space: pre; }
-.reboot-line.is-bright { color: #ffffff; }
-.reboot-line.is-dim { color: #6c6f72; }
+.reboot-line.is-bright { color: #ffff80; } /* the iconic BSOD yellow-cream highlight */
 .reboot-cursor {
   display: inline-block;
   color: #ffffff;
   animation: bios-blink 0.85s steps(1) infinite;
   width: 8px;
+  margin-top: 4px;
 }
 @keyframes bios-blink {
   0%, 49% { opacity: 1; }
@@ -1474,7 +1536,7 @@ input:focus-visible,
   z-index: 2147483620;
   background: #000;
 }
-.reboot-matrix.is-fading-in { animation: matrix-fade-in 1.8s ease forwards; }
+.reboot-matrix.is-fading-in { animation: matrix-fade-in 3.4s ease forwards; }
 @keyframes matrix-fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 .matrix-canvas {
@@ -1485,7 +1547,7 @@ input:focus-visible,
   display: block;
 }
 
-/* Matrix-style lock screen overlay (rendered above the rain by OS.tsx z-order) */
+/* Matrix-style lock screen overlay (rendered above the rain via z-order) */
 .lock-screen.is-matrix {
   background: transparent;
   color: #00ff66;
@@ -1505,7 +1567,7 @@ input:focus-visible,
 }
 .lock-matrix-shell {
   position: absolute;
-  top: 18%;
+  top: 15%;
   left: 0;
   right: 0;
   text-align: center;
@@ -1521,6 +1583,44 @@ input:focus-visible,
   92% { opacity: 0.5; transform: translateX(-2px); }
   94% { opacity: 0.9; transform: translateX(3px); }
   96% { opacity: 0.4; transform: translateX(0); }
+}
+
+/* Sign-in button — explicit logout/login interaction */
+.lock-signin-btn {
+  margin-top: 28px;
+  padding: 10px 28px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.lock-signin-btn:hover { background: var(--surface-2); }
+.lock-signin-btn:active { transform: translateY(1px); }
+.lock-signin-btn.is-matrix {
+  background: rgba(0, 30, 12, 0.55);
+  color: #00ff66;
+  border: 1px solid #00ff66;
+  font-family: "Lucida Console", "Consolas", "Courier New", monospace;
+  font-size: 15px;
+  letter-spacing: 3px;
+  padding: 14px 34px;
+  border-radius: 0;
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.7);
+  box-shadow: 0 0 24px rgba(0, 255, 102, 0.35), inset 0 0 12px rgba(0, 255, 102, 0.15);
+  animation: matrix-signin-pulse 2.2s ease-in-out infinite;
+}
+.lock-signin-btn.is-matrix:hover {
+  background: rgba(0, 80, 30, 0.7);
+  box-shadow: 0 0 36px rgba(0, 255, 102, 0.55), inset 0 0 18px rgba(0, 255, 102, 0.3);
+}
+@keyframes matrix-signin-pulse {
+  0%, 100% { box-shadow: 0 0 24px rgba(0, 255, 102, 0.35), inset 0 0 12px rgba(0, 255, 102, 0.15); }
+  50% { box-shadow: 0 0 32px rgba(0, 255, 102, 0.55), inset 0 0 18px rgba(0, 255, 102, 0.25); }
 }
 
 /* ============ External-only web app card ============ */

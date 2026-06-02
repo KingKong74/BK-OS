@@ -8,12 +8,14 @@ import { MobileShell } from "./MobileShell";
 import { LockScreen } from "./LockScreen";
 import { PoweredOff } from "./PoweredOff";
 import { RestartSequence } from "./RestartSequence";
+import { ShutdownSequence } from "./ShutdownSequence";
 
 export function OS() {
   const scene = useOS((s) => s.scene);
   const locked = useOS((s) => s.locked);
   const poweredOff = useOS((s) => s.poweredOff);
   const restartPhase = useOS((s) => s.restartPhase);
+  const shutdownPhase = useOS((s) => s.shutdownPhase);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [mounted, setMounted] = useState(false);
 
@@ -32,6 +34,7 @@ export function OS() {
           {isDesktop ? <DesktopShell /> : <MobileShell />}
           {locked && <LockScreen />}
           {restartPhase !== "off" && <RestartSequence />}
+          {shutdownPhase !== "off" && <ShutdownSequence />}
         </>
       )}
     </div>

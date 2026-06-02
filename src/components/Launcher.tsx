@@ -7,7 +7,7 @@ import { Icon } from "./Icon";
 import { AppIcon } from "./AppIcon";
 
 // Apps prominently shown in the "Pinned" row.
-const PINNED_IDS = ["mycomputer", "moniqr", "claude", "notepad", "settings", "projects", "freecell", "help"];
+const PINNED_IDS = ["mycomputer", "moniqr", "claude", "notepad", "settings", "projects"];
 
 export function Launcher() {
   const openApp = useOS((s) => s.openApp);
@@ -69,19 +69,19 @@ export function Launcher() {
     }
   };
 
-  const Tile = ({ id, big }: { id: string; big?: boolean }) => {
+  const Tile = ({ id }: { id: string }) => {
     const meta = APPS.find((a) => a.id === id);
     if (!meta) return null;
     return (
       <button
-        className={"launcher-app" + (big ? " is-big" : "")}
+        className="launcher-app"
         onPointerDown={(e) => onTileDown(e, id)}
         onPointerMove={onTileMove}
         onPointerUp={onTileUp}
         onPointerCancel={onTileUp}
       >
         <span className="launcher-tile">
-          <AppIcon id={id} size={big ? 38 : 32} />
+          <AppIcon id={id} size={32} />
         </span>
         <span className="launcher-name">{meta.name}</span>
       </button>
@@ -124,8 +124,8 @@ export function Launcher() {
             ) : (
               <>
                 <div className="launcher-section-label">Pinned</div>
-                <div className="launcher-grid launcher-grid-pinned">
-                  {pinnedApps.map((a) => <Tile key={a.id} id={a.id} big />)}
+                <div className="launcher-grid">
+                  {pinnedApps.map((a) => <Tile key={a.id} id={a.id} />)}
                 </div>
                 <div className="launcher-section-label launcher-section-label-spaced">All apps</div>
                 <div className="launcher-grid">
@@ -137,18 +137,6 @@ export function Launcher() {
 
           <div className="launcher-footer">
             <div className="launcher-footer-actions">
-              <button className="launcher-fb" title="Bailey">
-                <span className="launcher-fb-avatar">B</span>
-              </button>
-              <button className="launcher-fb" title="Documents" onClick={() => openAt(["C:", "Users", "Bailey", "Documents"])}>
-                <Icon name="folder" size={16} />
-              </button>
-              <button className="launcher-fb" title="Pictures" onClick={() => openAt(["C:", "Users", "Bailey", "Pictures"])}>
-                <Icon name="photo" size={16} />
-              </button>
-              <button className="launcher-fb" title="Settings" onClick={() => { close(); openApp("settings"); }}>
-                <Icon name="settings" size={16} />
-              </button>
               <div className="launcher-power-wrapper">
                 {powerOpen && (
                   <div className="launcher-power-pop">
@@ -166,6 +154,32 @@ export function Launcher() {
                   <Icon name="power" size={16} />
                 </button>
               </div>
+              <button className="launcher-fb" title="Settings" onClick={() => { close(); openApp("settings"); }}>
+                <Icon name="settings" size={16} />
+              </button>
+              <button className="launcher-fb" title="Pictures" onClick={() => openAt(["C:", "Users", "Bailey", "Pictures"])}>
+                <Icon name="photo" size={16} />
+              </button>
+              <button className="launcher-fb" title="Documents" onClick={() => openAt(["C:", "Users", "Bailey", "Documents"])}>
+                <Icon name="folder" size={16} />
+              </button>
+              <button className="launcher-fb launcher-fb-profile" title="Bailey">
+                <svg viewBox="0 0 16 16" width="20" height="20" shapeRendering="crispEdges">
+                  {/* hair */}
+                  <path fill="#5a3416" d="M5 2h6v1H5zM4 3h8v1H4zM3 4h10v2H3z" />
+                  {/* face */}
+                  <path fill="#f4c89e" d="M5 4h6v1H5zM4 5h8v3H4zM5 8h6v1H5z" />
+                  {/* eyes */}
+                  <rect x="6" y="6" width="1" height="1" fill="#000" />
+                  <rect x="9" y="6" width="1" height="1" fill="#000" />
+                  {/* mouth */}
+                  <rect x="7" y="8" width="2" height="1" fill="#7a3a3a" />
+                  {/* shirt */}
+                  <path fill="#3e6db8" d="M4 10h8v1H4zM3 11h10v1H3zM2 12h12v4H2z" />
+                  {/* collar */}
+                  <path fill="#f4c89e" d="M6 9h4v1H6z" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
