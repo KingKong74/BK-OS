@@ -43,6 +43,8 @@ export interface AppMeta {
   pinned?: boolean;
   /** if set, the app is a web view that loads this URL in an iframe */
   url?: string;
+  /** if true, the app's url cannot be iframed (CSP/X-Frame-Options) — render a launch-in-new-tab fallback instead */
+  externalOnly?: boolean;
 }
 
 export type SnapZone = "left" | "right" | "max" | "tl" | "tr" | "bl" | "br";

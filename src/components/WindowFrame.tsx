@@ -14,7 +14,6 @@ export function WindowFrame({ win }: { win: WindowState }) {
   const {
     focusWindow,
     moveWindow,
-    resizeWindow,
     closeWindow,
     minimizeWindow,
     toggleMaximize,
@@ -25,7 +24,11 @@ export function WindowFrame({ win }: { win: WindowState }) {
   } = useOS();
 
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
-  const resize = useRef<{ x: number; y: number; ow: number; oh: number } | null>(null);
+  const edgeResize = useRef<{
+    edge: string; sx: number; sy: number; ox: number; oy: number; ow: number; oh: number;
+  } | null>(null);
+  const pendingBounds = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const dragZone = useRef<SnapZone | null>(null);
   const [interacting, setInteracting] = useState(false);
 
@@ -71,23 +74,58 @@ export function WindowFrame({ win }: { win: WindowState }) {
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
   };
 
-  const onResizePointerDown = (e: React.PointerEvent) => {
+  // 8-direction edge resize. edge is a string containing 'n'/'s'/'e'/'w'.
+  const onEdgeDown = (edge: string) => (e: React.PointerEvent) => {
     e.stopPropagation();
     focusWindow(win.id);
-    resize.current = { x: e.clientX, y: e.clientY, ow: win.width, oh: win.height };
+    edgeResize.current = {
+      edge,
+      sx: e.clientX, sy: e.clientY,
+      ox: win.x, oy: win.y, ow: win.width, oh: win.height,
+    };
     setInteracting(true);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
-  const onResizePointerMove = (e: React.PointerEvent) => {
-    if (!resize.current) return;
-    resizeWindow(
-      win.id,
-      resize.current.ow + (e.clientX - resize.current.x),
-      resize.current.oh + (e.clientY - resize.current.y)
-    );
+  const onEdgeMove = (e: React.PointerEvent) => {
+    const r = edgeResize.current;
+    if (!r) return;
+    const MIN_W = 280, MIN_H = 180;
+    const dx = e.clientX - r.sx;
+    const dy = e.clientY - r.sy;
+    let nx = r.ox, ny = r.oy, nw = r.ow, nh = r.oh;
+    if (r.edge.includes("e")) {
+      nw = Math.max(MIN_W, r.ow + dx);
+    }
+    if (r.edge.includes("w")) {
+      const cdx = Math.min(dx, r.ow - MIN_W);
+      nx = r.ox + cdx;
+      nw = r.ow - cdx;
+    }
+    if (r.edge.includes("s")) {
+      nh = Math.max(MIN_H, r.oh + dy);
+    }
+    if (r.edge.includes("n")) {
+      const cdy = Math.min(dy, r.oh - MIN_H);
+      ny = Math.max(MENUBAR_H, r.oy + cdy);
+      nh = r.oh - cdy;
+    }
+    // Imperatively style the window for smooth resize (no React re-render per frame)
+    const el = rootRef.current;
+    if (el) {
+      el.style.left = `${nx}px`;
+      el.style.top = `${ny}px`;
+      el.style.width = `${nw}px`;
+      el.style.height = `${nh}px`;
+    }
+    pendingBounds.current = { x: nx, y: ny, width: nw, height: nh };
   };
-  const endResize = (e: React.PointerEvent) => {
-    resize.current = null;
+  const endEdge = (e: React.PointerEvent) => {
+    // Commit accumulated bounds to the store once
+    if (pendingBounds.current) {
+      setBounds(win.id, pendingBounds.current, null);
+      pendingBounds.current = null;
+    }
+    edgeResize.current = null;
     setInteracting(false);
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
   };
@@ -96,6 +134,7 @@ export function WindowFrame({ win }: { win: WindowState }) {
 
   return (
     <div
+      ref={rootRef}
       className={
         "window" +
         (isFocused ? " is-focused" : "") +
@@ -145,14 +184,16 @@ export function WindowFrame({ win }: { win: WindowState }) {
       </div>
       <div className="window-body">{renderApp(win.appId)}</div>
       {!win.maximized && (
-        <div
-          className="window-resize"
-          onPointerDown={onResizePointerDown}
-          onPointerMove={onResizePointerMove}
-          onPointerUp={endResize}
-          onPointerCancel={endResize}
-          aria-hidden="true"
-        />
+        <>
+          <div className="window-edge edge-n" onPointerDown={onEdgeDown("n")} onPointerMove={onEdgeMove} onPointerUp={endEdge} onPointerCancel={endEdge} aria-hidden="true" />
+          <div className="window-edge edge-s" onPointerDown={onEdgeDown("s")} onPointerMove={onEdgeMove} onPointerUp={endEdge} onPointerCancel={endEdge} aria-hidden="true" />
+          <div className="window-edge edge-w" onPointerDown={onEdgeDown("w")} onPointerMove={onEdgeMove} onPointerUp={endEdge} onPointerCancel={endEdge} aria-hidden="true" />
+          <div className="window-edge edge-e" onPointerDown={onEdgeDown("e")} onPointerMove={onEdgeMove} onPointerUp={endEdge} onPointerCancel={endEdge} aria-hidden="true" />
+          <div className="window-edge edge-nw" onPointerDown={onEdgeDown("nw")} onPointerMove={onEdgeMove} onPointerUp={endEdge} onPointerCancel={endEdge} aria-hidden="true" />
+          <div className="window-edge edge-ne" onPointerDown={onEdgeDown("ne")} onPointerMove={onEdgeMove} onPointerUp={endEdge} onPointerCancel={endEdge} aria-hidden="true" />
+          <div className="window-edge edge-sw" onPointerDown={onEdgeDown("sw")} onPointerMove={onEdgeMove} onPointerUp={endEdge} onPointerCancel={endEdge} aria-hidden="true" />
+          <div className="window-edge edge-se window-resize" onPointerDown={onEdgeDown("se")} onPointerMove={onEdgeMove} onPointerUp={endEdge} onPointerCancel={endEdge} aria-hidden="true" />
+        </>
       )}
     </div>
   );

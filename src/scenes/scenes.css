@@ -418,3 +418,532 @@
 [data-scene="classic-mac"] .lock-clock { font-weight: 400; letter-spacing: 0; }
 [data-scene="terminal"] .lock-screen { background: #000; color: var(--accent); }
 [data-scene="terminal"] .lock-clock { letter-spacing: 2px; font-weight: 400; }
+
+/* Retro search popover */
+[data-scene="win98"] .search-pop {
+  border: none;
+  border-radius: 0;
+  background: #c0c0c0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #ffffff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .search-item { border-radius: 0; }
+[data-scene="win98"] .search-item:hover { background: #000080; color: #ffffff; }
+[data-scene="win98"] .search-item:hover .search-thumb { background: #000080; color: #ffffff; }
+[data-scene="win98"] .search-item:hover .search-path { color: #ffffff; }
+[data-scene="win98"] .search-thumb { border-radius: 0; }
+
+/* ---------------- Retro 98: extra details ---------------- */
+
+/* Classic dithered scrollbars */
+[data-scene="win98"] ::-webkit-scrollbar { width: 16px; height: 16px; }
+[data-scene="win98"] ::-webkit-scrollbar-track {
+  background:
+    linear-gradient(45deg, #b0b0b0 25%, transparent 25%) 0 0 / 2px 2px,
+    linear-gradient(-45deg, #b0b0b0 25%, transparent 25%) 0 0 / 2px 2px,
+    #c0c0c0;
+}
+[data-scene="win98"] ::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border: none;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #ffffff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] ::-webkit-scrollbar-corner { background: #c0c0c0; }
+
+/* Dotted focus rectangle, like the classic */
+[data-scene="win98"] button:focus-visible,
+[data-scene="win98"] input:focus-visible,
+[data-scene="win98"] [role="button"]:focus-visible {
+  outline: 1px dotted #000000;
+  outline-offset: -3px;
+}
+
+/* Sunken text inputs everywhere */
+[data-scene="win98"] input[type="text"],
+[data-scene="win98"] input:not([type]),
+[data-scene="win98"] .launcher-search,
+[data-scene="win98"] .exp-search,
+[data-scene="win98"] .dock-search {
+  border-radius: 0;
+}
+[data-scene="win98"] .launcher input,
+[data-scene="win98"] .exp-search input,
+[data-scene="win98"] .dock-search input {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* Classic navy selection in the explorer */
+[data-scene="win98"] .exp-tile.is-selected,
+[data-scene="win98"] .exp-row.is-selected {
+  background: #000080;
+  color: #ffffff;
+  border-color: #000080;
+}
+[data-scene="win98"] .exp-row.is-selected .exp-row-kind,
+[data-scene="win98"] .exp-row.is-selected .exp-row-size,
+[data-scene="win98"] .exp-row.is-selected .exp-row-date,
+[data-scene="win98"] .exp-tile.is-selected .exp-name { color: #ffffff; }
+
+/* Hatched diagonal resize handle */
+[data-scene="win98"] .window-resize {
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0%,
+      transparent 32%,
+      #808080 32%,
+      #808080 38%,
+      transparent 38%,
+      transparent 52%,
+      #808080 52%,
+      #808080 58%,
+      transparent 58%,
+      transparent 72%,
+      #808080 72%,
+      #808080 78%,
+      transparent 78%
+    );
+}
+
+/* Pressed buttons sink */
+[data-scene="win98"] .dock-launcher:active,
+[data-scene="win98"] .dock-tile:active,
+[data-scene="win98"] .dock-taskview:active,
+[data-scene="win98"] .launcher-power button:active,
+[data-scene="win98"] .vault-upload:active,
+[data-scene="win98"] .exp-nav button:active,
+[data-scene="win98"] .exp-viewbtn:active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #ffffff;
+}
+
+/* ============ Retro: new apps ============ */
+
+/* Notes toolbar + add button */
+[data-scene="win98"] .notes-add {
+  border: none; border-radius: 0; background: #c0c0c0; color: #000; font-weight: 700;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .notes-add:active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+}
+[data-scene="win98"] .sticky-note { border: 1px solid #000; box-shadow: 2px 2px 0 rgba(0,0,0,0.45); border-radius: 0; }
+
+/* Calculator: classic Win98 grey buttons */
+[data-scene="win98"] .calc-display {
+  background: #fff; color: #000;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+  border: 1px solid #0a0a0a; border-radius: 0;
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+[data-scene="win98"] .calc-btn {
+  border: none; border-radius: 0; background: #c0c0c0; color: #000; font-weight: 700;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .calc-btn.k-op, [data-scene="win98"] .calc-btn.k-eq {
+  background: #c0c0c0; color: #000;
+}
+[data-scene="win98"] .calc-btn.k-op { color: #800000; }
+[data-scene="win98"] .calc-btn.k-eq { color: #000080; }
+[data-scene="win98"] .calc-btn:active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+}
+
+/* Recycle Bin */
+[data-scene="win98"] .bin-empty,
+[data-scene="win98"] .bin-actions button {
+  border: none; border-radius: 0; background: #c0c0c0; color: #000;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .bin-empty:active,
+[data-scene="win98"] .bin-actions button:active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+}
+
+/* Terminal: keep classic look across all scenes (it's always a terminal) */
+
+/* Make Start button look like the iconic chunky retro button */
+[data-scene="win98"] .dock-launcher {
+  border: none; border-radius: 0; background: #c0c0c0; color: #000; font-weight: 700;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+
+/* ============ Retro: Task Manager + FreeCell + folder retro state ============ */
+[data-scene="win98"] .tm-tab {
+  border-radius: 0; background: #c0c0c0; color: #000;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff;
+  border: none;
+}
+[data-scene="win98"] .tm-tab.is-active {
+  background: #dfdfdf;
+  box-shadow: inset 1px 1px #fff, inset -1px 0 #0a0a0a;
+}
+[data-scene="win98"] .tm-actions button {
+  border: none; border-radius: 0; background: #c0c0c0; color: #000;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .tm-actions button:active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+}
+[data-scene="win98"] .tm-meter-bar {
+  background: #fff; border: 1px solid #0a0a0a;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+}
+[data-scene="win98"] .tm-meter-fill {
+  background: repeating-linear-gradient(90deg, #00a040 0 4px, #008030 4px 8px);
+}
+
+[data-scene="win98"] .fc-toolbar button {
+  border: none; border-radius: 0; font-weight: 700;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .fc-toolbar button:active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+}
+[data-scene="win98"] .fc-card { border-radius: 0; }
+[data-scene="win98"] .fc-slot { border-radius: 0; }
+
+/* ============ Retro: new file explorer chrome ============ */
+[data-scene="win98"] .exp-menubar {
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+  box-shadow: inset 0 -1px #ffffff;
+}
+[data-scene="win98"] .exp-menu-item {
+  color: #000;
+  font-weight: 400;
+  border-radius: 0;
+}
+[data-scene="win98"] .exp-menu-item:hover {
+  background: #000080;
+  color: #fff;
+  border-color: transparent;
+}
+
+[data-scene="win98"] .exp-toolbar {
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+  box-shadow: inset 0 -1px #ffffff;
+  padding: 4px;
+}
+[data-scene="win98"] .exp-tool-sep {
+  background: #808080;
+  box-shadow: 1px 0 #ffffff;
+  margin: 0 3px;
+}
+[data-scene="win98"] .exp-tbtn {
+  border-radius: 0;
+  border: 1px solid transparent;
+  color: #000;
+  background: transparent;
+}
+[data-scene="win98"] .exp-tbtn:hover:not(:disabled) {
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff;
+  border-color: transparent;
+}
+[data-scene="win98"] .exp-tbtn.is-active,
+[data-scene="win98"] .exp-tbtn:active:not(:disabled) {
+  background: #c0c0c0;
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #ffffff;
+  border-color: transparent;
+}
+
+[data-scene="win98"] .exp-addressbar {
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+  box-shadow: inset 0 -1px #ffffff;
+}
+[data-scene="win98"] .exp-addr-input {
+  background: #ffffff;
+  border: none;
+  border-radius: 0;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #ffffff;
+}
+[data-scene="win98"] .exp-addr-seg button {
+  border-radius: 0;
+  color: #000;
+}
+[data-scene="win98"] .exp-addr-seg button:hover {
+  background: #000080;
+  color: #fff;
+}
+
+[data-scene="win98"] .exp-side {
+  background: #c0c0c0;
+  border-right: 1px solid #808080;
+}
+[data-scene="win98"] .exp-loc {
+  border-radius: 0;
+  color: #000;
+}
+[data-scene="win98"] .exp-loc:hover {
+  background: rgba(0, 0, 128, 0.15);
+}
+[data-scene="win98"] .exp-loc.is-active {
+  background: #000080;
+  color: #ffffff;
+}
+
+[data-scene="win98"] .exp-pane { background: #ffffff; padding: 6px; }
+[data-scene="win98"] .exp-empty { color: #707070; }
+[data-scene="win98"] .exp-tile { color: #000; }
+[data-scene="win98"] .exp-tile:hover {
+  background: rgba(0, 0, 128, 0.12);
+  border: 1px dotted #808080;
+}
+[data-scene="win98"] .exp-tile.is-selected {
+  background: #000080;
+  color: #ffffff;
+  border-color: #ffff00;
+  border-style: dotted;
+}
+[data-scene="win98"] .exp-list-head {
+  background: #c0c0c0;
+  color: #000;
+  font-weight: 700;
+  border-bottom: 1px solid #808080;
+  box-shadow: inset 0 -1px #ffffff;
+}
+[data-scene="win98"] .exp-row { color: #000; }
+[data-scene="win98"] .exp-row:hover { background: rgba(0, 0, 128, 0.08); }
+[data-scene="win98"] .exp-row.is-selected {
+  background: #000080;
+  color: #ffffff;
+}
+
+[data-scene="win98"] .exp-statusbar {
+  background: #c0c0c0;
+  border-top: 1px solid #808080;
+  box-shadow: inset 0 1px #ffffff;
+  padding: 3px;
+}
+[data-scene="win98"] .exp-status-panel {
+  background: #c0c0c0;
+  color: #000;
+  border: none;
+  border-radius: 0;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #ffffff;
+}
+
+/* ============ Retro: sticky notes, help, notes list ============ */
+[data-scene="win98"] .sticky-note-floating {
+  border: 1px solid #000;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+[data-scene="win98"] .sticky-note-header {
+  background: #f5d544;
+  border-bottom: 1px solid #000;
+}
+[data-scene="win98"] .desktop-icon-rename {
+  border: 1px solid #000;
+  border-radius: 0;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+}
+[data-scene="win98"] .notes-row textarea {
+  border: 1px solid #000;
+  border-radius: 0;
+}
+[data-scene="win98"] .notes-row-del {
+  border: none; border-radius: 0; background: #c0c0c0; color: #000;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .notes-row-del:active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+}
+[data-scene="win98"] .help-toc {
+  background: #c0c0c0;
+  border-right: 1px solid #808080;
+}
+[data-scene="win98"] .help-toc-item { border-radius: 0; }
+[data-scene="win98"] .help-toc-item:hover { background: rgba(0, 0, 128, 0.15); }
+[data-scene="win98"] .help-toc-item.is-active {
+  background: #000080; color: #fff;
+}
+[data-scene="win98"] .help-content code {
+  border: none;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+  background: #fff;
+  border-radius: 0;
+}
+
+/* ============ Retro: menu dropdowns + indented sidebar ============ */
+[data-scene="win98"] .exp-menu-item.is-open {
+  background: #000080;
+  color: #ffffff;
+  border-color: transparent;
+}
+[data-scene="win98"] .exp-menu-dropdown {
+  background: #c0c0c0;
+  border: 1px solid #000;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+  padding: 1px;
+}
+[data-scene="win98"] .exp-menu-option {
+  color: #000;
+  border-radius: 0;
+  padding: 3px 16px 3px 4px;
+}
+[data-scene="win98"] .exp-menu-option:hover:not(:disabled) {
+  background: #000080;
+  color: #ffffff;
+}
+[data-scene="win98"] .exp-menu-option:disabled {
+  color: #808080;
+  opacity: 1;
+}
+[data-scene="win98"] .exp-menu-sep {
+  background: #808080;
+  box-shadow: 0 1px #ffffff;
+  margin: 2px 2px 3px;
+}
+
+/* ============ Retro: notepad + rename overlay ============ */
+[data-scene="win98"] .notepad-menubar {
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+  box-shadow: inset 0 -1px #ffffff;
+}
+[data-scene="win98"] .notepad-menu-item { border-radius: 0; color: #000; }
+[data-scene="win98"] .notepad-menu-item:hover,
+[data-scene="win98"] .notepad-menu-item.is-open {
+  background: #000080; color: #ffffff; border-color: transparent;
+}
+[data-scene="win98"] .notepad-area {
+  font-family: "Lucida Console", "Courier New", monospace;
+  background: #ffffff;
+  color: #000;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #ffffff;
+  border: none;
+}
+[data-scene="win98"] .notepad-status {
+  background: #c0c0c0;
+  border-top: 1px solid #808080;
+  box-shadow: inset 0 1px #ffffff;
+}
+[data-scene="win98"] .notepad-menu-dropdown {
+  background: #c0c0c0;
+  border: 1px solid #000;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+  padding: 1px;
+}
+[data-scene="win98"] .notepad-menu-option { color: #000; border-radius: 0; padding: 3px 16px 3px 4px; }
+[data-scene="win98"] .notepad-menu-option:hover:not(:disabled) { background: #000080; color: #fff; }
+[data-scene="win98"] .notepad-menu-option:disabled { color: #808080; opacity: 1; }
+[data-scene="win98"] .notepad-menu-sep { background: #808080; box-shadow: 0 1px #ffffff; }
+
+[data-scene="win98"] .exp-rename-wrap {
+  background: #ffffff;
+  border: 1px solid #000080;
+  border-radius: 0;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #ffffff;
+}
+
+/* ============ Retro: Start menu sidebar ============ */
+[data-scene="win98"] .launcher {
+  border-radius: 0;
+  border: none;
+  box-shadow:
+    inset -1px -1px #000,
+    inset 1px 1px #fff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf,
+    2px 2px 0 rgba(0, 0, 0, 0.45);
+  background: #c0c0c0;
+}
+[data-scene="win98"] .launcher-power-pop {
+  background: #c0c0c0;
+  border: 1px solid #000;
+  border-radius: 0;
+  padding: 1px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+}
+[data-scene="win98"] .launcher-power-pop button {
+  color: #000;
+  border-radius: 0;
+}
+[data-scene="win98"] .launcher-power-pop button:hover {
+  background: #000080;
+  color: #fff;
+}
+[data-scene="win98"] .launcher-main { padding: 14px 14px 10px 14px; }
+[data-scene="win98"] .launcher-search {
+  border: none;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+}
+[data-scene="win98"] .launcher-app { border-radius: 0; }
+[data-scene="win98"] .launcher-app:hover {
+  background: #000080;
+  color: #fff;
+}
+[data-scene="win98"] .launcher-app:hover .launcher-name { color: #fff; }
+
+/* ============ Retro: Start menu polish ============ */
+[data-scene="win98"] .launcher-section-label { color: #404040; font-weight: 700; }
+[data-scene="win98"] .launcher-section-count {
+  background: #c0c0c0;
+  border: 1px solid #808080;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #404040;
+  color: #000;
+  border-radius: 0;
+  padding: 0 5px;
+}
+[data-scene="win98"] .launcher-footer {
+  border-top: 1px solid #808080;
+  box-shadow: 0 -1px #fff inset;
+  padding-top: 6px;
+}
+[data-scene="win98"] .launcher-fb { border-radius: 0; }
+[data-scene="win98"] .launcher-fb:hover {
+  background: #000080;
+  color: #fff;
+  box-shadow: inset 1px 1px #000040;
+}
+[data-scene="win98"] .launcher-fb.is-active {
+  background: #000080;
+  color: #fff;
+}
+[data-scene="win98"] .launcher-fb-avatar {
+  border-radius: 0;
+  background: linear-gradient(135deg, #ffae00, #c97c1c);
+  border: 1px solid #000;
+}
+
+/* ============ Retro: External-only app card ============ */
+[data-scene="win98"] .web-app-external { background: #c0c0c0; color: #000; }
+[data-scene="win98"] .web-app-external-icon {
+  background: #c0c0c0;
+  border: 1px solid #000;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #808080;
+  border-radius: 0;
+}
+[data-scene="win98"] .web-app-external p code {
+  background: #fff;
+  border: 1px solid #808080;
+  box-shadow: inset 1px 1px #404040;
+  color: #000;
+}
+[data-scene="win98"] .web-app-external-cta {
+  background: #c0c0c0;
+  color: #000;
+  border-radius: 0;
+  box-shadow: inset -1px -1px #000, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  padding: 7px 16px;
+  font-weight: 400;
+}
+[data-scene="win98"] .web-app-external-cta:hover { filter: none; background: #d4d0c8; }
+[data-scene="win98"] .web-app-external-cta:active {
+  box-shadow: inset 1px 1px #000, inset -1px -1px #fff;
+}

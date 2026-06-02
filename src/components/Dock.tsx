@@ -4,6 +4,8 @@ import { useRef } from "react";
 import { useOS } from "@/os/store";
 import { APP_MAP } from "@/os/appsMeta";
 import { Icon } from "./Icon";
+import { AppIcon } from "./AppIcon";
+import { DockSearch } from "./DockSearch";
 
 export function Dock() {
   const windows = useOS((s) => s.windows);
@@ -50,7 +52,8 @@ export function Dock() {
     reorderTo(e.clientX, id);
   };
   const onPinUp = (e: React.PointerEvent, id: string) => {
-    const moved = drag.current?.moved;
+    if (!drag.current) return; // not a left-click sequence — context menu / aux click
+    const moved = drag.current.moved;
     drag.current = null;
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
     if (!moved) openApp(id);
@@ -68,13 +71,11 @@ export function Dock() {
 
   return (
     <div className="dock">
-      <button className="dock-launcher" aria-label="Launcher" onClick={() => toggleLauncher()}>
-        <Icon name="grid" size={20} />
+      <button className="dock-launcher" aria-label="Start" onClick={() => toggleLauncher()}>
+        <AppIcon id="_start" size={18} />
+        <span className="dock-launcher-label">Start</span>
       </button>
-      <button className="dock-search" onClick={() => toggleLauncher(true)}>
-        <Icon name="search" size={15} />
-        <span>Search</span>
-      </button>
+      <DockSearch />
       <button className="dock-taskview" aria-label="Task view" onClick={() => toggleTaskView()}>
         <Icon name="taskview" size={19} />
       </button>
@@ -97,8 +98,8 @@ export function Dock() {
               onPointerUp={(e) => onPinUp(e, id)}
               onContextMenu={(e) => appMenu(e, id)}
             >
-              <span className="dock-tile" style={{ background: meta.accent, color: meta.accentFg }}>
-                <Icon name={meta.icon} size={20} />
+              <span className="dock-tile">
+                <AppIcon id={id} size={22} />
               </span>
             </button>
           );
@@ -129,7 +130,7 @@ export function Dock() {
                     ]);
                   }}
                 >
-                  {meta && <Icon name={meta.icon} size={15} />}
+                  {meta && <AppIcon id={w.appId} size={15} />}
                   <span className="dock-task-label">{meta?.name}</span>
                 </button>
               );

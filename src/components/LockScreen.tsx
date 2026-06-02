@@ -5,6 +5,7 @@ import { useOS } from "@/os/store";
 
 export function LockScreen() {
   const unlock = useOS((s) => s.unlock);
+  const restartPhase = useOS((s) => s.restartPhase);
   const [time, setTime] = useState("");
   const [date, setDate] = useState("");
 
@@ -19,11 +20,21 @@ export function LockScreen() {
     return () => clearInterval(t);
   }, []);
 
+  const isMatrix = restartPhase === "matrix";
+
   return (
-    <div className="lock-screen" onClick={unlock} role="button" aria-label="Unlock">
+    <div
+      className={"lock-screen" + (isMatrix ? " is-matrix" : "")}
+      onClick={unlock}
+      role="button"
+      aria-label="Unlock"
+    >
+      {isMatrix && <div className="lock-matrix-shell">BAILEY · LOGGED OUT</div>}
       <div className="lock-clock">{time}</div>
       <div className="lock-date">{date}</div>
-      <div className="lock-hint">Click to unlock</div>
+      <div className="lock-hint">
+        {isMatrix ? "Click anywhere to sign back in" : "Click to unlock"}
+      </div>
     </div>
   );
 }
