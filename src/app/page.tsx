@@ -1,5 +1,11 @@
-import { OS } from "@/components/OS";
+'use client';
+import AuthGate from '@/components/AuthGate';
+import { OS } from '@/components/OS';
 
-export default function Page() {
-  return <OS />;
+export default function HomePage() {
+  return (
+    <AuthGate>
+      <OS />
+    </AuthGate>
+  );
 }

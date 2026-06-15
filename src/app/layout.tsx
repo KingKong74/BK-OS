@@ -1,22 +1,18 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import AuthProvider from '@/components/AuthProvider';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "bailey.os",
-  description: "A personal operating system for everything.",
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  themeColor: "#101319",
+  title: 'bailey.os',
+  description: 'Personal OS shell',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

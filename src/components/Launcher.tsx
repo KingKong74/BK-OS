@@ -5,6 +5,7 @@ import { useOS } from "@/os/store";
 import { APPS } from "@/os/appsMeta";
 import { Icon } from "./Icon";
 import { AppIcon } from "./AppIcon";
+import UserStatusBar from '@/components/UserStatusBar';
 
 // Apps prominently shown in the "Pinned" row.
 const PINNED_IDS = ["mycomputer", "moniqr", "claude", "notepad", "settings", "projects"];
@@ -134,7 +135,7 @@ export function Launcher() {
               </>
             )}
           </div>
-
+          <UserStatusBar />
           <div className="launcher-footer">
             <div className="launcher-footer-actions">
               <div className="launcher-power-wrapper">
@@ -184,6 +185,7 @@ export function Launcher() {
           </div>
         </div>
       </div>
+      
 
       {ghost && (
         <div className="launcher-drag-ghost" style={{ left: ghost.x + 10, top: ghost.y + 10 }}>
