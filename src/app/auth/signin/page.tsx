@@ -1,10 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SignInPage() {
+  return (
+    <Suspense fallback={<LoadingCard />}>
+      <SignInForm />
+    </Suspense>
+  );
+}
+
+function LoadingCard() {
+  return (
+    <div style={pageStyle}>
+      <div style={cardStyle}>
+        <div style={titleBarStyle}>bailey.os — sign in</div>
+        <div style={{ padding: 16 }}>Loading…</div>
+      </div>
+    </div>
+  );
+}
+
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
