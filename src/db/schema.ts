@@ -5,6 +5,7 @@ import {
   integer,
   primaryKey,
   uuid,
+  boolean,
 } from 'drizzle-orm/pg-core';
 
 // ─── Auth.js standard tables ───────────────────────────────
@@ -15,7 +16,7 @@ export const users = pgTable('user', {
   email: text('email').unique(),
   emailVerified: timestamp('email_verified', { mode: 'date' }),
   image: text('image'),
-  passwordHash: text('password_hash'), // for email+password login (Phase 2)
+  passwordHash: text('password_hash'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -75,11 +76,12 @@ export const notes = pgTable('notes', {
   color: text('color').default('yellow').notNull(),
   positionX: integer('position_x').default(0).notNull(),
   positionY: integer('position_y').default(0).notNull(),
+  closed: boolean('closed').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// ─── Type exports (useful in API routes) ───────────────────
+// ─── Type exports ──────────────────────────────────────────
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

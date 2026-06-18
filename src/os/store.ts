@@ -13,6 +13,86 @@ export interface DesktopShortcut { id: string; appId: string; label?: string; }
 let idCounter = 0;
 const newId = () => `w${Date.now().toString(36)}-${(idCounter++).toString(36)}`;
 
+// ─── Notes ↔ /api/notes sync helpers ────────────────────────
+//
+// The Zustand `stickyNotes` slice is the single source of truth for the UI.
+// Every action below updates the slice optimistically, then syncs to the
+// server in the background (with debouncing for high-frequency events like
+// drag-move and text-typing).
+//
+// Notes created BEFORE server-sync existed (e.g. the legacy "n1" welcome note
+// or anything still in localStorage) have non-UUID ids. We skip API calls for
+// those ids — they live only on the client and disappear when cleared.
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isSyncableId(id: string): boolean {
+  return UUID_RE.test(id);
+}
+
+function clientUuid(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback (won't be hit in modern browsers / Node 20+)
+  return "00000000-0000-4000-8000-" + Date.now().toString(16).padStart(12, "0");
+}
+
+const POSITION_DEBOUNCE_MS = 500;
+const TEXT_DEBOUNCE_MS = 800;
+
+const pendingMoves = new Map<string, { x: number; y: number }>();
+let moveTimer: ReturnType<typeof setTimeout> | null = null;
+
+const pendingText = new Map<string, string>();
+let textTimer: ReturnType<typeof setTimeout> | null = null;
+
+function flushMoves() {
+  pendingMoves.forEach((pos, id) => {
+    fetch(`/api/notes/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        positionX: Math.round(pos.x),
+        positionY: Math.round(pos.y),
+      }),
+    }).catch(() => { /* ignore — UI already updated */ });
+  });
+  pendingMoves.clear();
+  moveTimer = null;
+}
+
+function scheduleMoveSync(id: string, x: number, y: number) {
+  pendingMoves.set(id, { x, y });
+  if (moveTimer) clearTimeout(moveTimer);
+  moveTimer = setTimeout(flushMoves, POSITION_DEBOUNCE_MS);
+}
+
+function flushText() {
+  pendingText.forEach((text, id) => {
+    fetch(`/api/notes/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: text }),
+    }).catch(() => {});
+  });
+  pendingText.clear();
+  textTimer = null;
+}
+
+function scheduleTextSync(id: string, text: string) {
+  pendingText.set(id, text);
+  if (textTimer) clearTimeout(textTimer);
+  textTimer = setTimeout(flushText, TEXT_DEBOUNCE_MS);
+}
+
+// Fire any pending changes before page unloads (best effort).
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", () => {
+    if (moveTimer) { clearTimeout(moveTimer); flushMoves(); }
+    if (textTimer) { clearTimeout(textTimer); flushText(); }
+  });
+}
+
 interface OSState {
   scene: SceneId;
   windows: WindowState[];
@@ -29,6 +109,7 @@ interface OSState {
   poweredOff: boolean;
   vaultInitialPath: string[] | null;
   stickyNotes: StickyNote[];
+  notesReady: boolean;
   recycleBin: RecycledItem[];
   deletedPaths: string[];
   desktopShortcuts: DesktopShortcut[];
@@ -57,6 +138,7 @@ interface OSState {
   powerOn: () => void;
   restart: () => void;
   setVaultInitialPath: (path: string[] | null) => void;
+  initNotes: () => Promise<void>;
   addNote: (x?: number, y?: number) => void;
   updateNote: (id: string, text: string) => void;
   removeNote: (id: string) => void;
@@ -116,7 +198,8 @@ export const useOS = create<OSState>()(
       locked: false,
       poweredOff: false,
       vaultInitialPath: null,
-      stickyNotes: [{ id: "n1", text: "Welcome to bailey.os.\n\nDrag me by the yellow header. The × deletes me." }],
+      stickyNotes: [],   // hydrated from /api/notes on mount, not from localStorage
+      notesReady: false,
       recycleBin: [],
       deletedPaths: [],
       desktopShortcuts: [
@@ -167,14 +250,12 @@ export const useOS = create<OSState>()(
           launcherOpen: false,
           menu: null,
           taskViewOpen: false,
-          locked: true, // clear auth — once powered back on, must sign in
+          locked: true,
         }),
       finishShutdown: () => set({ poweredOff: true, shutdownPhase: "off" }),
       powerOn: () => set({ poweredOff: false, locked: true, restartPhase: "off", shutdownPhase: "off" }),
       sleep: () => set({ locked: true, launcherOpen: false, menu: null, taskViewOpen: false }),
       restart: () => {
-        // Novelty reboot: close everything, kick off the BIOS phase. The
-        // sequence ends with locked = true + matrix-style login.
         set({
           windows: [],
           focusedId: null,
@@ -191,42 +272,135 @@ export const useOS = create<OSState>()(
       setShutdownPhase: (phase) => set({ shutdownPhase: phase }),
       setVaultInitialPath: (path) => set({ vaultInitialPath: path }),
 
-      addNote: (x, y) =>
+      // ─── Notes (server-synced) ─────────────────────────────────
+
+      initNotes: async () => {
+        try {
+          const res = await fetch("/api/notes");
+          if (!res.ok) {
+            // 401 = not signed in (AuthGate will redirect anyway). Other errors:
+            // leave stickyNotes empty so the user can still see the empty state.
+            set({ notesReady: true });
+            return;
+          }
+          const data = await res.json();
+          const stickyNotes: StickyNote[] = (data.notes ?? []).map((n: {
+            id: string;
+            body?: string;
+            color?: string;
+            positionX?: number;
+            positionY?: number;
+            closed?: boolean;
+          }) => ({
+            id: n.id,
+            text: n.body ?? "",
+            x: n.positionX,
+            y: n.positionY,
+            color: (n.color ?? "yellow") as NoteColor,
+            closed: n.closed ?? false,
+          }));
+          set({ stickyNotes, notesReady: true });
+        } catch {
+          set({ notesReady: true });
+        }
+      },
+
+      addNote: (x, y) => {
+        const state = get();
+        const id = clientUuid();
+        const posX = x ?? 120 + (state.stickyNotes.length % 6) * 24;
+        const posY = y ?? 120 + (state.stickyNotes.length % 6) * 24;
+
+        // Optimistic
         set((s) => ({
           stickyNotes: [
             ...s.stickyNotes,
-            {
-              id: `n${Date.now().toString(36)}`,
-              text: "",
-              x: x ?? 120 + (s.stickyNotes.length % 6) * 24,
-              y: y ?? 120 + (s.stickyNotes.length % 6) * 24,
-            },
+            { id, text: "", x: posX, y: posY, color: "yellow", closed: false },
           ],
-        })),
-      updateNote: (id, text) =>
+        }));
+
+        // Server
+        fetch("/api/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id,
+            body: "",
+            color: "yellow",
+            positionX: Math.round(posX),
+            positionY: Math.round(posY),
+            closed: false,
+          }),
+        }).catch(() => {});
+      },
+
+      updateNote: (id, text) => {
         set((s) => ({
           stickyNotes: s.stickyNotes.map((n) => (n.id === id ? { ...n, text } : n)),
-        })),
-      removeNote: (id) =>
-        set((s) => ({ stickyNotes: s.stickyNotes.filter((n) => n.id !== id) })),
-      closeNote: (id) =>
+        }));
+        if (isSyncableId(id)) scheduleTextSync(id, text);
+      },
+
+      removeNote: (id) => {
+        set((s) => ({ stickyNotes: s.stickyNotes.filter((n) => n.id !== id) }));
+        pendingText.delete(id);
+        pendingMoves.delete(id);
+        if (isSyncableId(id)) {
+          fetch(`/api/notes/${id}`, { method: "DELETE" }).catch(() => {});
+        }
+      },
+
+      closeNote: (id) => {
         set((s) => ({
           stickyNotes: s.stickyNotes.map((n) => (n.id === id ? { ...n, closed: true } : n)),
-        })),
-      openNote: (id) =>
+        }));
+        if (isSyncableId(id)) {
+          fetch(`/api/notes/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ closed: true }),
+          }).catch(() => {});
+        }
+      },
+
+      openNote: (id) => {
         set((s) => ({
           stickyNotes: s.stickyNotes.map((n) => (n.id === id ? { ...n, closed: false } : n)),
-        })),
-      setNoteColor: (id, color) =>
+        }));
+        if (isSyncableId(id)) {
+          fetch(`/api/notes/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ closed: false }),
+          }).catch(() => {});
+        }
+      },
+
+      setNoteColor: (id, color) => {
         set((s) => ({
           stickyNotes: s.stickyNotes.map((n) => (n.id === id ? { ...n, color } : n)),
-        })),
-      moveNote: (id, x, y) =>
+        }));
+        if (isSyncableId(id)) {
+          fetch(`/api/notes/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ color }),
+          }).catch(() => {});
+        }
+      },
+
+      moveNote: (id, x, y) => {
+        const clampedX = Math.max(0, x);
+        const clampedY = Math.max(MENUBAR_H + 2, y);
         set((s) => ({
           stickyNotes: s.stickyNotes.map((n) =>
-            n.id === id ? { ...n, x: Math.max(0, x), y: Math.max(MENUBAR_H + 2, y) } : n
+            n.id === id ? { ...n, x: clampedX, y: clampedY } : n
           ),
-        })),
+        }));
+        if (isSyncableId(id)) scheduleMoveSync(id, clampedX, clampedY);
+      },
+
+      // ───────────────────────────────────────────────────────────
 
       recycle: (item) =>
         set((s) => ({
@@ -283,7 +457,6 @@ export const useOS = create<OSState>()(
         set((s) => {
           const key = parentPath.join("/");
           const existing = s.vfsAdditions[key] ?? [];
-          // Avoid duplicate name in same folder
           const sansSame = existing.filter((n) => n.name !== node.name);
           return { vfsAdditions: { ...s.vfsAdditions, [key]: [...sansSame, node] } };
         }),
@@ -309,7 +482,6 @@ export const useOS = create<OSState>()(
       openApp: (appId) => {
         let targetAppId = appId;
         if (appId === "games") {
-          // Virtual app: opens the File Explorer at C:\Program Files\Games
           set({ vaultInitialPath: ["C:", "Program Files", "Games"] });
           targetAppId = "mycomputer";
         }
@@ -448,7 +620,6 @@ export const useOS = create<OSState>()(
         set((s) => {
           const w = s.windows.find((win) => win.id === id);
           if (!w) return {};
-          // focused & visible -> minimize; otherwise focus/restore
           if (s.focusedId === id && !w.minimized) {
             return {
               focusedId: null,
@@ -470,6 +641,9 @@ export const useOS = create<OSState>()(
     {
       name: "bailey-os",
       storage: createJSONStorage(() => localStorage),
+      // NOTE: stickyNotes is intentionally NOT persisted here — it loads from
+      // /api/notes via initNotes() on every page mount so the data is always
+      // server-truthy and cross-device consistent.
       partialize: (s) => ({
         scene: s.scene,
         windows: s.windows,
@@ -479,7 +653,6 @@ export const useOS = create<OSState>()(
         gridSnap: s.gridSnap,
         pinnedApps: s.pinnedApps,
         poweredOff: s.poweredOff,
-        stickyNotes: s.stickyNotes,
         recycleBin: s.recycleBin,
         deletedPaths: s.deletedPaths,
         desktopShortcuts: s.desktopShortcuts,

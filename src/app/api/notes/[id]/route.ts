@@ -27,6 +27,7 @@ export async function PATCH(
     if (body.color !== undefined) updateData.color = body.color;
     if (body.positionX !== undefined) updateData.positionX = body.positionX;
     if (body.positionY !== undefined) updateData.positionY = body.positionY;
+    if (body.closed !== undefined) updateData.closed = body.closed;
 
     const [updated] = await db
       .update(notes)

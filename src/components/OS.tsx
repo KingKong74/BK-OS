@@ -16,10 +16,18 @@ export function OS() {
   const poweredOff = useOS((s) => s.poweredOff);
   const restartPhase = useOS((s) => s.restartPhase);
   const shutdownPhase = useOS((s) => s.shutdownPhase);
+  const initNotes = useOS((s) => s.initNotes);
+  const notesReady = useOS((s) => s.notesReady);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  // Hydrate sticky notes from /api/notes on first mount (AuthGate guarantees
+  // we already have a session by the time we render).
+  useEffect(() => {
+    if (!notesReady) initNotes();
+  }, [notesReady, initNotes]);
 
   if (!mounted) {
     return <div className="os-root" data-scene="win98" />;
