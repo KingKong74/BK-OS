@@ -105,29 +105,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await seedFileSystemForUser(user.id);
 
-  // Parse path from req.query
+  // Parse path from req.query — client-visible segments (what they navigate)
   const rawPath = req.query.path;
   const pathArray = Array.isArray(rawPath) ? rawPath : rawPath ? [rawPath] : [];
-  const segs = parseDavPath(pathArray);
+  const clientSegs = parseDavPath(pathArray);
+
+  // Internally we mount the user's home (C:/Users/Bailey/) as the WebDAV root.
+  // This hides the C: drive and Users wrapping from clients — Windows can't
+  // render a folder named "C:" anyway (reserved character).
+  const HOME_PREFIX = ["C:", "Users", "Bailey"];
+  const fsSegs = [...HOME_PREFIX, ...clientSegs];
 
   try {
     switch (method) {
       case "GET":
       case "HEAD":
-        return await handleGet(req, res, user, segs, method === "HEAD");
+        return await handleGet(req, res, user, fsSegs, method === "HEAD");
       case "PUT":
-        return await handlePut(req, res, user, segs);
+        return await handlePut(req, res, user, fsSegs);
       case "DELETE":
-        return await handleDelete(req, res, user, segs);
+        return await handleDelete(req, res, user, fsSegs);
       case "MKCOL":
-        return await handleMkcol(req, res, user, segs);
+        return await handleMkcol(req, res, user, fsSegs);
       case "MOVE":
-        return await handleMove(req, res, user, segs);
+        return await handleMove(req, res, user, fsSegs);
       case "COPY":
         res.status(501).send("COPY not yet supported");
         return;
       case "PROPFIND":
-        return await handlePropfind(req, res, user, segs);
+        return await handlePropfind(req, res, user, clientSegs, fsSegs);
       case "PROPPATCH":
         // Accept silently — we don't store custom props
         res.setHeader("Content-Type", 'application/xml; charset="utf-8"');
@@ -156,20 +162,11 @@ async function handleGet(
   _req: NextApiRequest,
   res: NextApiResponse,
   user: AuthedUser,
-  segs: string[],
+  fsSegs: string[],
   isHead: boolean
 ) {
-  if (segs.length === 0) {
-    const children = await listChildren(user.id, null);
-    const names = children.map((c) => c.name).join("\n");
-    const body = `BK-OS WebDAV root\n\n${names}\n`;
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.status(200);
-    if (isHead) return res.end();
-    return res.send(body);
-  }
-
-  const resolved = await resolvePath(user.id, segs);
+  // Resolve the path (always at least 3 segments deep — C:/Users/Bailey/...)
+  const resolved = await resolvePath(user.id, fsSegs);
   if (!resolved?.id || !resolved.node) {
     res.status(404).send("Not Found");
     return;
@@ -203,21 +200,20 @@ async function handleGet(
     if (isHead) return res.end();
     return res.end(buf);
   }
-  // Empty file
   res.setHeader("Content-Length", "0");
   res.status(200).end();
 }
 
 // ─── PUT ───────────────────────────────────────────────────
 
-async function handlePut(req: NextApiRequest, res: NextApiResponse, user: AuthedUser, segs: string[]) {
-  if (segs.length === 0) {
+async function handlePut(req: NextApiRequest, res: NextApiResponse, user: AuthedUser, fsSegs: string[]) {
+  if (fsSegs.length === 0) {
     res.status(405).send("Cannot PUT root");
     return;
   }
 
-  const parentSegs = segs.slice(0, -1);
-  const name = segs[segs.length - 1];
+  const parentSegs = fsSegs.slice(0, -1);
+  const name = fsSegs[fsSegs.length - 1];
 
   let parentId: string | null = null;
   if (parentSegs.length > 0) {
@@ -300,12 +296,12 @@ async function handlePut(req: NextApiRequest, res: NextApiResponse, user: Authed
 
 // ─── DELETE ────────────────────────────────────────────────
 
-async function handleDelete(_req: NextApiRequest, res: NextApiResponse, user: AuthedUser, segs: string[]) {
-  if (segs.length === 0) {
+async function handleDelete(_req: NextApiRequest, res: NextApiResponse, user: AuthedUser, fsSegs: string[]) {
+  if (fsSegs.length === 0) {
     res.status(405).send("Cannot delete root");
     return;
   }
-  const resolved = await resolvePath(user.id, segs);
+  const resolved = await resolvePath(user.id, fsSegs);
   if (!resolved?.id) {
     res.status(404).send("Not Found");
     return;
@@ -320,13 +316,13 @@ async function handleDelete(_req: NextApiRequest, res: NextApiResponse, user: Au
 
 // ─── MKCOL ─────────────────────────────────────────────────
 
-async function handleMkcol(_req: NextApiRequest, res: NextApiResponse, user: AuthedUser, segs: string[]) {
-  if (segs.length === 0) {
+async function handleMkcol(_req: NextApiRequest, res: NextApiResponse, user: AuthedUser, fsSegs: string[]) {
+  if (fsSegs.length === 0) {
     res.status(405).send("Bad target");
     return;
   }
-  const parentSegs = segs.slice(0, -1);
-  const name = segs[segs.length - 1];
+  const parentSegs = fsSegs.slice(0, -1);
+  const name = fsSegs[fsSegs.length - 1];
 
   let parentId: string | null = null;
   if (parentSegs.length > 0) {
@@ -348,8 +344,8 @@ async function handleMkcol(_req: NextApiRequest, res: NextApiResponse, user: Aut
 
 // ─── MOVE ──────────────────────────────────────────────────
 
-async function handleMove(req: NextApiRequest, res: NextApiResponse, user: AuthedUser, segs: string[]) {
-  if (segs.length === 0) {
+async function handleMove(req: NextApiRequest, res: NextApiResponse, user: AuthedUser, fsSegs: string[]) {
+  if (fsSegs.length === 0) {
     res.status(405).send("Cannot move root");
     return;
   }
@@ -373,14 +369,16 @@ async function handleMove(req: NextApiRequest, res: NextApiResponse, user: Authe
     return;
   }
   const destStr = destPath === "/api/webdav" ? "" : destPath.slice(prefix.length);
-  const destSegs = parseDavPath(destStr.split("/"));
+  // Apply the same C:/Users/Bailey prefix as the source path
+  const HOME_PREFIX = ["C:", "Users", "Bailey"];
+  const destSegs = [...HOME_PREFIX, ...parseDavPath(destStr.split("/"))];
 
-  if (destSegs.length === 0) {
+  if (destSegs.length === HOME_PREFIX.length) {
     res.status(400).send("Bad destination");
     return;
   }
 
-  const srcResolved = await resolvePath(user.id, segs);
+  const srcResolved = await resolvePath(user.id, fsSegs);
   if (!srcResolved?.id) {
     res.status(404).send("Source not found");
     return;
@@ -419,67 +417,49 @@ async function handleMove(req: NextApiRequest, res: NextApiResponse, user: Authe
 
 // ─── PROPFIND ──────────────────────────────────────────────
 
-async function handlePropfind(req: NextApiRequest, res: NextApiResponse, user: AuthedUser, segs: string[]) {
+async function handlePropfind(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  user: AuthedUser,
+  clientSegs: string[],
+  fsSegs: string[]
+) {
   const depth = (req.headers["depth"] as string) ?? "1";
 
-  let targetId: string | null = null;
-  let isRoot = false;
-  if (segs.length === 0) {
-    isRoot = true;
-  } else {
-    const resolved = await resolvePath(user.id, segs);
-    if (!resolved?.id || !resolved.node) {
-      res.status(404).send("Not Found");
-      return;
-    }
-    targetId = resolved.id;
+  // Resolve the fs node corresponding to where the client thinks they are
+  const resolved = await resolvePath(user.id, fsSegs);
+  if (!resolved?.id || !resolved.node) {
+    res.status(404).send("Not Found");
+    return;
   }
+  const self = resolved.node;
 
   const resources: DavResource[] = [];
 
-  // Self
-  if (isRoot) {
-    resources.push({
-      segments: [],
-      name: "",
-      isDir: true,
-      sizeBytes: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-  } else {
-    const self = await getNode(user.id, targetId!);
-    if (!self) {
-      res.status(404).send("Not Found");
-      return;
-    }
-    resources.push({
-      segments: segs,
-      name: self.name,
-      isDir: self.type === "folder",
-      sizeBytes: self.sizeBytes,
-      createdAt: self.createdAt.toISOString(),
-      updatedAt: self.updatedAt.toISOString(),
-      contentType: mimeForKind(self.kind, self.name),
-    });
-  }
+  // Self entry — use the CLIENT-visible segments for href
+  resources.push({
+    segments: clientSegs,
+    name: clientSegs.length === 0 ? "" : self.name,
+    isDir: self.type === "folder",
+    sizeBytes: self.sizeBytes,
+    createdAt: self.createdAt.toISOString(),
+    updatedAt: self.updatedAt.toISOString(),
+    contentType: mimeForKind(self.kind, self.name),
+  });
 
-  // Children
-  if (depth !== "0") {
-    const target = isRoot ? null : await getNode(user.id, targetId!);
-    if (isRoot || (target && target.type === "folder")) {
-      const children = await listChildren(user.id, isRoot ? null : targetId);
-      for (const c of children) {
-        resources.push({
-          segments: [...segs, c.name],
-          name: c.name,
-          isDir: c.type === "folder",
-          sizeBytes: c.sizeBytes,
-          createdAt: c.createdAt.toISOString(),
-          updatedAt: c.updatedAt.toISOString(),
-          contentType: mimeForKind(c.kind, c.name),
-        });
-      }
+  // Children (only if depth=1 or infinity and target is a folder)
+  if (depth !== "0" && self.type === "folder") {
+    const children = await listChildren(user.id, self.id);
+    for (const c of children) {
+      resources.push({
+        segments: [...clientSegs, c.name],
+        name: c.name,
+        isDir: c.type === "folder",
+        sizeBytes: c.sizeBytes,
+        createdAt: c.createdAt.toISOString(),
+        updatedAt: c.updatedAt.toISOString(),
+        contentType: mimeForKind(c.kind, c.name),
+      });
     }
   }
 
