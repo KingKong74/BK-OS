@@ -1,7 +1,6 @@
 "use client";
 
 import { useOS } from "@/os/store";
-import { listChildren, uniqueName } from "@/os/vfs";
 import { MenuBar } from "./MenuBar";
 import { Dock } from "./Dock";
 import { Launcher } from "./Launcher";
@@ -12,6 +11,7 @@ import { StickyNotes } from "./StickyNotes";
 import { ContextMenu } from "./ContextMenu";
 import { TaskView } from "./TaskView";
 import { CommandPalette } from "./CommandPalette";
+import { resolvePath, createFsNode } from "@/hooks/useFs";
 
 export function DesktopShell() {
   const windows = useOS((s) => s.windows);
@@ -22,13 +22,46 @@ export function DesktopShell() {
   const resetIconPositions = useOS((s) => s.resetIconPositions);
   const addNote = useOS((s) => s.addNote);
   const addDesktopShortcut = useOS((s) => s.addDesktopShortcut);
-  const addVfsNode = useOS((s) => s.addVfsNode);
-  const vfsAdditions = useOS((s) => s.vfsAdditions);
   const setIconPosition = useOS((s) => s.setIconPosition);
   const clipboard = useOS((s) => s.clipboard);
 
-  const desktopExisting = () =>
-    listChildren(DESKTOP_PATH, vfsAdditions).map((n) => n.name);
+  // Create a new server-backed item on the Desktop folder.
+  // Returns a promise; we fire-and-forget from the menu callback.
+  const createOnDesktop = async (
+    type: "file" | "folder",
+    baseName: string,
+    kind: string = "other",
+    clientX = 0,
+    clientY = 0
+  ) => {
+    try {
+      const { id: desktopId } = await resolvePath(["C:", "Users", "Bailey", "Desktop"]);
+      if (!desktopId) return;
+      // Generate a unique name by checking existing children
+      const res = await fetch(`/api/fs/list?parentId=${desktopId}`);
+      const data = await res.json();
+      const existing: string[] = (data.children || []).map((c: { name: string }) => c.name);
+      let name = baseName;
+      let i = 2;
+      while (existing.includes(name)) {
+        const dotIdx = baseName.lastIndexOf(".");
+        if (dotIdx > 0) {
+          name = `${baseName.slice(0, dotIdx)} (${i})${baseName.slice(dotIdx)}`;
+        } else {
+          name = `${baseName} (${i})`;
+        }
+        i++;
+      }
+      const node = await createFsNode(desktopId, name, type, kind, type === "file" ? "" : undefined);
+      // Position the new icon near the click location
+      setIconPosition(`srv:${node.id}`, clientX - 40, clientY - 40);
+      // The DesktopIcons component will pick up the new child on next refresh tick;
+      // a manual reload helps ensure freshness.
+      window.dispatchEvent(new CustomEvent("bkos:fs-refresh"));
+    } catch (e) {
+      console.error("create failed:", e);
+    }
+  };
 
   return (
     <div className="desktop">
@@ -43,26 +76,12 @@ export function DesktopShell() {
             {
               label: "New folder",
               icon: "folder",
-              onSelect: () => {
-                const name = uniqueName("New folder", desktopExisting());
-                addVfsNode(DESKTOP_PATH, { type: "folder", name, children: [] });
-                setIconPosition(`vfs:${name}`, clientX - 40, clientY - 40);
-              },
+              onSelect: () => { createOnDesktop("folder", "New folder", "other", clientX, clientY); },
             },
             {
               label: "New text document",
               icon: "notes",
-              onSelect: () => {
-                const name = uniqueName("New Text Document.txt", desktopExisting());
-                addVfsNode(DESKTOP_PATH, {
-                  type: "file",
-                  name,
-                  kind: "doc",
-                  size: 0,
-                  modified: new Date().toISOString().slice(0, 10),
-                });
-                setIconPosition(`vfs:${name}`, clientX - 40, clientY - 40);
-              },
+              onSelect: () => { createOnDesktop("file", "New Text Document.txt", "doc", clientX, clientY); },
             },
             { label: "New Post-it", icon: "notes", onSelect: () => addNote(clientX, clientY) },
             { separator: true },

@@ -114,6 +114,7 @@ export function Explorer({ initialPath: _initialPath = [] as string[] }: { initi
       while (existing.includes(name)) { name = `${baseName} (${i})`; i++; }
       await createFsNode(currentSeg.id, name, "folder");
       refresh();
+      window.dispatchEvent(new CustomEvent("bkos:fs-refresh"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "create failed");
     }
@@ -128,6 +129,7 @@ export function Explorer({ initialPath: _initialPath = [] as string[] }: { initi
       while (existing.includes(name)) { name = `New Text Document (${i}).txt`; i++; }
       await createFsNode(currentSeg.id, name, "file", "doc", "");
       refresh();
+      window.dispatchEvent(new CustomEvent("bkos:fs-refresh"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "create failed");
     }
@@ -196,12 +198,45 @@ export function Explorer({ initialPath: _initialPath = [] as string[] }: { initi
   const startEditAddr = () => { setAddrDraft(pathToString(stack)); setEditingAddr(true); };
   const cancelAddr = () => setEditingAddr(false);
 
+  // Parse "C:\Users\Bailey\Documents" or similar into segments, then resolve + navigate
+  const commitAddr = async () => {
+    const raw = addrDraft.trim();
+    setEditingAddr(false);
+    if (!raw) return;
+    // Normalize: accept both "/" and "\" separators, split on either
+    const segs = raw.split(/[\\/]+/).filter(Boolean);
+    if (segs.length === 0) return;
+    try {
+      // Use the resolvePath helper to find the node id for the destination
+      const mod = await import("@/hooks/useFs");
+      const { id } = await mod.resolvePath(segs);
+      if (id) {
+        // Build a stack that mirrors the path
+        const newStack: PathSeg[] = [ROOT_SEG, ...segs.map((name, idx) => ({ id: idx === segs.length - 1 ? id : "", name }))];
+        // For intermediate ids we don't actually know — just leave blank.
+        // Last segment's id is what useFsChildren needs.
+        navigateTo(newStack);
+      } else {
+        setError(`Path not found: ${raw}`);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "navigate failed");
+    }
+  };
+
   // Auto-clear errors after a few sec
   useEffect(() => {
     if (!error) return;
     const t = setTimeout(() => setError(null), 3500);
     return () => clearTimeout(t);
   }, [error]);
+
+  // Refresh when external code dispatches `bkos:fs-refresh`
+  useEffect(() => {
+    const handler = () => refresh();
+    window.addEventListener("bkos:fs-refresh", handler);
+    return () => window.removeEventListener("bkos:fs-refresh", handler);
+  }, [refresh]);
 
   // Keyboard shortcut: F2 rename, Delete = recycle
   useEffect(() => {
@@ -264,7 +299,7 @@ export function Explorer({ initialPath: _initialPath = [] as string[] }: { initi
               value={addrDraft}
               onChange={(e) => setAddrDraft(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") { e.preventDefault(); /* No-op for now — full address resolution requires API rework */ cancelAddr(); }
+                if (e.key === "Enter") { e.preventDefault(); commitAddr(); }
                 else if (e.key === "Escape") cancelAddr();
               }}
               onBlur={cancelAddr}

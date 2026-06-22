@@ -4,9 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { useOS } from "@/os/store";
 import { APP_MAP } from "@/os/appsMeta";
 import { MENUBAR_H } from "@/os/types";
-import { listChildren, type FsNode } from "@/os/vfs";
 import { AppIcon } from "./AppIcon";
 import { FolderImg, FileImg } from "./FsIcons";
+import {
+  resolvePath,
+  useFsChildren,
+  renameFsNode,
+  deleteFsNode,
+  type FsNodeDTO,
+} from "@/hooks/useFs";
 
 const CELL_W = 88;
 const CELL_H = 98;
@@ -54,8 +60,8 @@ function findFreeCell(target: { col: number; row: number }, occupied: { col: num
 // Merged item — either a system app shortcut, a real folder, or a real file on the desktop.
 type Item =
   | { kind: "app"; id: string; appId: string; label: string }
-  | { kind: "folder"; id: string; name: string; label: string }
-  | { kind: "file"; id: string; name: string; fileKind: "doc" | "image" | "pdf" | "sheet" | "other"; label: string };
+  | { kind: "folder"; id: string; serverId: string; name: string; label: string }
+  | { kind: "file"; id: string; serverId: string; name: string; fileKind: string; label: string };
 
 export function DesktopIcons() {
   const openApp = useOS((s) => s.openApp);
@@ -79,24 +85,49 @@ export function DesktopIcons() {
   const [selected, setSelected] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [desktopFolderId, setDesktopFolderId] = useState<string | null | undefined>(undefined);
+
+  // Resolve the Desktop folder id from the server fs on mount.
+  useEffect(() => {
+    let alive = true;
+    resolvePath(["C:", "Users", "Bailey", "Desktop"])
+      .then(({ id }) => { if (alive) setDesktopFolderId(id); })
+      .catch(() => { if (alive) setDesktopFolderId(null); });
+    return () => { alive = false; };
+  }, []);
+
+  // Server-backed desktop children (files + folders the user creates).
+  const { children: serverChildren, refresh: refreshServer } = useFsChildren(desktopFolderId);
+
+  // Refresh when external code dispatches `bkos:fs-refresh` (e.g., right-click new folder)
+  useEffect(() => {
+    const handler = () => refreshServer();
+    window.addEventListener("bkos:fs-refresh", handler);
+    return () => window.removeEventListener("bkos:fs-refresh", handler);
+  }, [refreshServer]);
+
   const drag = useRef<{ x: number; y: number; ox: number; oy: number; moved: boolean; cx: number; cy: number } | null>(null);
   const renameTimer = useRef<number | null>(null);
 
-  // Build the merged item list
+  // Build the merged item list: app shortcuts (client-side) + server desktop nodes.
   const items: Item[] = [];
   for (const sc of desktopShortcuts) {
     const meta = APP_MAP[sc.appId];
     if (!meta) continue;
     items.push({ kind: "app", id: sc.id, appId: sc.appId, label: sc.label ?? meta.name });
   }
-  const vfsItems = listChildren(DESKTOP_PATH, vfsAdditions);
-  for (const node of vfsItems) {
-    const fullPath = [...DESKTOP_PATH, node.name].join("/");
-    const label = pathLabels[fullPath] ?? node.name;
+  for (const node of serverChildren) {
     if (node.type === "folder") {
-      items.push({ kind: "folder", id: `vfs:${node.name}`, name: node.name, label });
+      items.push({ kind: "folder", id: `srv:${node.id}`, serverId: node.id, name: node.name, label: node.name });
     } else if (node.type === "file") {
-      items.push({ kind: "file", id: `vfs:${node.name}`, name: node.name, fileKind: (node.kind as Item extends { fileKind: infer K } ? K : never), label });
+      items.push({
+        kind: "file",
+        id: `srv:${node.id}`,
+        serverId: node.id,
+        name: node.name,
+        fileKind: node.kind,
+        label: node.name,
+      });
     }
   }
 
@@ -120,8 +151,10 @@ export function DesktopIcons() {
         if (item.kind === "app") {
           renameDesktopShortcut(item.id, draft.trim());
         } else {
-          const fullPath = [...DESKTOP_PATH, item.name].join("/");
-          setPathLabel(fullPath, draft.trim());
+          // Server-backed file or folder
+          renameFsNode(item.serverId, draft.trim())
+            .then(() => refreshServer())
+            .catch((e) => console.error("rename failed:", e));
         }
       }
     }
@@ -134,19 +167,30 @@ export function DesktopIcons() {
     if (item.kind === "app") {
       openApp(item.appId);
     } else if (item.kind === "folder") {
-      setVaultInitialPath([...DESKTOP_PATH, item.name]);
+      // Open Explorer at root for now (Phase 2 will accept a starting folder)
       openApp("mycomputer");
     } else if (item.kind === "file") {
-      if (item.fileKind === "doc") {
-        requestOpenInNotepad([...DESKTOP_PATH, item.name], item.name);
+      // For text-ish files, open in Notepad with the server node id.
+      if (
+        item.fileKind === "doc" ||
+        item.fileKind === "code" ||
+        item.fileKind === "config" ||
+        item.fileKind === "other"
+      ) {
+        useOS.getState().setNotepadInitial({ path: [item.serverId], name: item.name });
+        openApp("notepad");
       }
+      // Other kinds (image/pdf/audio/video) — Phase 2 will add preview apps
     }
   };
   const deleteItem = (item: Item) => {
     if (item.kind === "app") {
       removeDesktopShortcut(item.id);
     } else {
-      removeVfsNode(DESKTOP_PATH, item.name);
+      // Server-backed — recycle via API
+      deleteFsNode(item.serverId)
+        .then(() => refreshServer())
+        .catch((e) => console.error("delete failed:", e));
     }
   };
 
@@ -291,7 +335,8 @@ export function DesktopIcons() {
               e.preventDefault();
               e.stopPropagation();
               setSelected(item.id);
-              const openLabel = item.kind === "folder" ? "Open" : item.kind === "file" ? (item.fileKind === "doc" ? "Open in Notepad" : "Open") : "Open";
+              const isTextLike = item.kind === "file" && (item.fileKind === "doc" || item.fileKind === "code" || item.fileKind === "config" || item.fileKind === "other");
+              const openLabel = item.kind === "folder" ? "Open" : item.kind === "file" ? (isTextLike ? "Open in Notepad" : "Open") : "Open";
               openMenu(e.clientX, e.clientY, [
                 { label: openLabel, icon: item.kind === "folder" ? "folder" : item.kind === "file" ? "notes" : (APP_MAP[(item as any).appId]?.icon ?? "grid"), onSelect: () => openItem(item) },
                 { separator: true },
