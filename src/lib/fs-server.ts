@@ -1,5 +1,5 @@
 import { db, fsNodes } from '@/db';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -38,87 +38,97 @@ export async function deleteBlob(blobRef: string): Promise<void> {
  * Called the first time a user signs up. Creates the canonical folder
  * structure for BK-OS. All seeded folders are marked isSystem=true so they
  * can't be deleted (rename allowed, delete blocked).
+ *
+ * Race-safe: uses a Postgres advisory lock keyed off the userId hash so
+ * concurrent calls serialize and the second one sees the existing nodes.
  */
 export async function seedFileSystemForUser(userId: string): Promise<void> {
-  // Idempotency: if any node already exists for this user, skip seeding.
-  const existing = await db
-    .select({ id: fsNodes.id })
-    .from(fsNodes)
-    .where(eq(fsNodes.userId, userId))
-    .limit(1);
-  if (existing.length > 0) return;
+  // Convert user id to a stable bigint for advisory locking. Use a hash of
+  // the userId so different users don't block each other.
+  const lockKey = sql.raw(`hashtext('bkos_seed_' || '${userId.replace(/'/g, "''")}')`);
 
-  // Helper to insert and return id
-  async function insert(
-    parentId: string | null,
-    name: string,
-    type: 'file' | 'folder',
-    kind = 'other',
-    extras: { textContent?: string; isSystem?: boolean } = {}
-  ): Promise<string> {
-    const [row]: { id: string }[] = await db
-      .insert(fsNodes)
-      .values({
-        userId,
-        parentId,
-        name,
-        type,
-        kind,
-        textContent: extras.textContent ?? null,
-        isSystem: extras.isSystem ?? true,
-      })
-      .returning({ id: fsNodes.id });
-    return row.id;
-  }
+  await db.transaction(async (tx) => {
+    // Take an advisory lock for this user's seed. Auto-released at tx end.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(${lockKey}::bigint)`);
 
-  // C: drive — top-level
-  const cDrive = await insert(null, 'C:', 'folder');
-  const users = await insert(cDrive, 'Users', 'folder');
-  const bailey = await insert(users, 'Bailey', 'folder');
+    // Idempotency: if any node already exists for this user, skip seeding.
+    const existing = await tx
+      .select({ id: fsNodes.id })
+      .from(fsNodes)
+      .where(eq(fsNodes.userId, userId))
+      .limit(1);
+    if (existing.length > 0) return;
 
-  // Desktop (intentionally empty — user populates via right-click)
-  await insert(bailey, 'Desktop', 'folder');
-
-  // Documents
-  const documents = await insert(bailey, 'Documents', 'folder');
-  await insert(documents, 'Financial', 'folder');
-  await insert(documents, 'Tax', 'folder');
-  await insert(documents, 'Personal', 'folder');
-
-  // Pictures
-  const pictures = await insert(bailey, 'Pictures', 'folder');
-  await insert(pictures, '2025', 'folder');
-  await insert(pictures, '2026', 'folder');
-
-  // Downloads / Music / Videos — for Media Library later
-  await insert(bailey, 'Downloads', 'folder');
-  await insert(bailey, 'Music', 'folder');
-  await insert(bailey, 'Videos', 'folder');
-
-  // Projects — for the Projects app
-  await insert(bailey, 'Projects', 'folder');
-
-  // Welcome readme on the desktop
-  await insert(
-    await getDesktopId(userId),
-    'Welcome.txt',
-    'file',
-    'doc',
-    {
-      textContent:
-        "Welcome to BK-OS.\n\n" +
-        "This is your personal computer in the browser. Everything you " +
-        "create here is saved to your account. Right-click the desktop to " +
-        "make folders, drop sticky notes, or pin apps.\n\n" +
-        "Press Ctrl+K for the command palette to jump to anything fast.\n\n" +
-        "Have a poke around.",
-      isSystem: false,
+    // Helper to insert and return id (uses the same tx)
+    async function insert(
+      parentId: string | null,
+      name: string,
+      type: 'file' | 'folder',
+      kind = 'other',
+      extras: { textContent?: string; isSystem?: boolean } = {}
+    ): Promise<string> {
+      const [row]: { id: string }[] = await tx
+        .insert(fsNodes)
+        .values({
+          userId,
+          parentId,
+          name,
+          type,
+          kind,
+          textContent: extras.textContent ?? null,
+          isSystem: extras.isSystem ?? true,
+        })
+        .returning({ id: fsNodes.id });
+      return row.id;
     }
-  );
 
-  // Program Files (system, hidden-ish but reachable)
-  const programFiles = await insert(cDrive, 'Program Files', 'folder');
-  await insert(programFiles, 'Games', 'folder');
+    // C: drive — top-level
+    const cDrive = await insert(null, 'C:', 'folder');
+    const users = await insert(cDrive, 'Users', 'folder');
+    const bailey = await insert(users, 'Bailey', 'folder');
+    const desktop = await insert(bailey, 'Desktop', 'folder');
+
+    // Documents
+    const documents = await insert(bailey, 'Documents', 'folder');
+    await insert(documents, 'Financial', 'folder');
+    await insert(documents, 'Tax', 'folder');
+    await insert(documents, 'Personal', 'folder');
+
+    // Pictures
+    const pictures = await insert(bailey, 'Pictures', 'folder');
+    await insert(pictures, '2025', 'folder');
+    await insert(pictures, '2026', 'folder');
+
+    // Downloads / Music / Videos
+    await insert(bailey, 'Downloads', 'folder');
+    await insert(bailey, 'Music', 'folder');
+    await insert(bailey, 'Videos', 'folder');
+
+    // Projects
+    await insert(bailey, 'Projects', 'folder');
+
+    // Welcome readme on the desktop
+    await insert(
+      desktop,
+      'Welcome.txt',
+      'file',
+      'doc',
+      {
+        textContent:
+          "Welcome to BK-OS.\n\n" +
+          "This is your personal computer in the browser. Everything you " +
+          "create here is saved to your account. Right-click the desktop to " +
+          "make folders, drop sticky notes, or pin apps.\n\n" +
+          "Press Ctrl+K for the command palette to jump to anything fast.\n\n" +
+          "Have a poke around.",
+        isSystem: false,
+      }
+    );
+
+    // Program Files
+    const programFiles = await insert(cDrive, 'Program Files', 'folder');
+    await insert(programFiles, 'Games', 'folder');
+  });
 }
 
 async function getDesktopId(userId: string): Promise<string> {
@@ -302,7 +312,7 @@ export async function recycleNode(userId: string, id: string) {
     .where(
       and(
         eq(fsNodes.userId, userId),
-        sql`${fsNodes.id} = ANY(${Array.from(allIds)})`
+        inArray(fsNodes.id, Array.from(allIds))
       )
     );
 }
@@ -392,7 +402,7 @@ export async function permaDelete(userId: string, id: string) {
       .where(
         and(
           eq(fsNodes.userId, userId),
-          sql`${fsNodes.id} = ANY(${toDelete.map((d) => d.id)})`
+          inArray(fsNodes.id, toDelete.map((d) => d.id))
         )
       );
   }
