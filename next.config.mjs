@@ -2,13 +2,15 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  // Don't 308-redirect /api/webdav/ → /api/webdav. WebDAV clients (Windows
+  // File Explorer especially) don't follow redirects and fail silently.
+  skipTrailingSlashRedirect: true,
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Mirror server-side mode flag to the client.
   env: {
     NEXT_PUBLIC_BKOS_MODE: process.env.BKOS_MODE || 'private',
   },

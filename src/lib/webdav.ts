@@ -1,63 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db, users } from "@/db";
-import { eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
-
-// ─── Basic Auth ─────────────────────────────────────────────
-
-export interface WebDAVUser {
-  id: string;
-  email: string;
-}
-
-/**
- * Authenticate a request via HTTP Basic. Returns user info or null.
- * The 401 response below should be returned by callers if this returns null.
- */
-export async function authBasic(req: NextRequest): Promise<WebDAVUser | null> {
-  const header = req.headers.get("authorization");
-  if (!header || !header.startsWith("Basic ")) return null;
-
-  let decoded: string;
-  try {
-    decoded = atob(header.slice("Basic ".length));
-  } catch {
-    return null;
-  }
-  const idx = decoded.indexOf(":");
-  if (idx < 0) return null;
-  const email = decoded.slice(0, idx);
-  const password = decoded.slice(idx + 1);
-
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
-  if (!user || !user.passwordHash) return null;
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) return null;
-  return { id: user.id, email: user.email! };
-}
-
-export function unauthorizedResponse(): NextResponse {
-  return new NextResponse("Unauthorized", {
-    status: 401,
-    headers: {
-      "WWW-Authenticate": 'Basic realm="BK-OS WebDAV"',
-      "Content-Type": "text/plain",
-    },
-  });
-}
+// WebDAV helpers shared between the Pages Router endpoint and any callers.
+// Auth is now handled inline in the Pages Router handler.
 
 // ─── Path parsing ──────────────────────────────────────────
 
 /**
  * Parse a WebDAV URL path into BK-OS file system segments.
  * Example: "/api/webdav/C:/Users/Bailey/Documents/" → ["C:", "Users", "Bailey", "Documents"]
- *
- * The trailing slash is significant in WebDAV (folders) but we don't preserve it
- * in segments — callers should check node.type to decide.
  */
 export function parseDavPath(segments: string[]): string[] {
   return segments
@@ -78,7 +26,6 @@ function xmlEscape(s: string): string {
 
 /**
  * Build a "href" path safely encoded for WebDAV XML responses.
- * Always uses forward slashes and percent-encodes each segment.
  */
 export function davHref(segments: string[], isDir: boolean): string {
   const encoded = segments.map((s) => encodeURIComponent(s)).join("/");
@@ -87,12 +34,12 @@ export function davHref(segments: string[], isDir: boolean): string {
 }
 
 export interface DavResource {
-  segments: string[];        // path segments from root (excluding "/api/webdav")
-  name: string;              // last segment, or "" for root
+  segments: string[];
+  name: string;
   isDir: boolean;
   sizeBytes: number;
-  createdAt: string;         // ISO
-  updatedAt: string;         // ISO
+  createdAt: string;
+  updatedAt: string;
   contentType?: string;
 }
 
@@ -106,7 +53,6 @@ function formatHttpDate(iso: string): string {
 
 /**
  * Build a multistatus XML body for a PROPFIND response.
- * Each resource entry contains the standard "live" props that file managers expect.
  */
 export function buildPropfindXml(resources: DavResource[]): string {
   const responses = resources.map((r) => {
@@ -141,19 +87,7 @@ export function buildPropfindXml(resources: DavResource[]): string {
 </D:multistatus>`;
 }
 
-export function multistatusResponse(xml: string): NextResponse {
-  return new NextResponse(xml, {
-    status: 207,
-    headers: {
-      "Content-Type": 'application/xml; charset="utf-8"',
-      "DAV": "1, 2",
-    },
-  });
-}
-
-/**
- * Map a BK-OS file kind to a MIME content type guess.
- */
+/** Map a BK-OS file kind / filename to a MIME content type guess. */
 export function mimeForKind(kind: string, name: string): string {
   const lower = name.toLowerCase();
   if (lower.endsWith(".md")) return "text/markdown; charset=utf-8";
@@ -176,9 +110,7 @@ export function mimeForKind(kind: string, name: string): string {
   }
 }
 
-/**
- * Infer the BK-OS file kind from a filename.
- */
+/** Infer the BK-OS file kind from a filename. */
 export function kindForName(name: string): string {
   const lower = name.toLowerCase();
   if (/\.(md|txt|log)$/i.test(lower)) return "doc";
