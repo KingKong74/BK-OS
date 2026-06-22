@@ -1,4 +1,7 @@
-export type SceneId = "modern" | "dark" | "classic-mac" | "terminal" | "win98";
+export type ThemeId = "win98" | "win98-dark";
+
+// Backward-compat: many files still reference SceneId. Alias it.
+export type SceneId = ThemeId;
 
 export type IconName =
   | "lock"
@@ -28,24 +31,52 @@ export type IconName =
   | "power"
   | "refresh"
   | "qr"
-  | "external-link";
+  | "external-link"
+  | "sun"
+  | "moon"
+  | "globe"
+  | "command";
 
-export interface AppMeta {
+export type AppOrigin = "builtin" | "addon-native" | "addon-external";
+export type AppVisibility = "public" | "private" | "both";
+
+export type AppCategory =
+  | "system"
+  | "productivity"
+  | "development"
+  | "infrastructure"
+  | "media"
+  | "finance"
+  | "games";
+
+export interface CommandDescriptor {
+  id: string;
+  label: string;
+  keywords?: string[];
+  icon?: IconName;
+}
+
+export interface AppManifest {
   id: string;
   name: string;
   icon: IconName;
-  /** css color used for the icon tile background */
   accent: string;
-  /** color for the icon glyph on the tile */
   accentFg: string;
   defaultSize?: { width: number; height: number };
-  /** show in the dock's pinned area */
   pinned?: boolean;
-  /** if set, the app is a web view that loads this URL in an iframe */
   url?: string;
-  /** if true, the app's url cannot be iframed (CSP/X-Frame-Options) — render a launch-in-new-tab fallback instead */
   externalOnly?: boolean;
+
+  origin: AppOrigin;
+  visibility: AppVisibility;
+  category: AppCategory;
+  description?: string;
+  showInLauncher?: boolean;
+  commands?: CommandDescriptor[];
+  hasTrayWidget?: boolean;
 }
+
+export type AppMeta = AppManifest;
 
 export type SnapZone = "left" | "right" | "max" | "tl" | "tr" | "bl" | "br";
 
@@ -59,15 +90,11 @@ export interface WindowState {
   z: number;
   minimized: boolean;
   maximized: boolean;
-  /** active snap zone, if the window is snapped */
   snap?: SnapZone | null;
-  /** bounds to restore to when un-maximizing / un-snapping */
   prev?: { x: number; y: number; width: number; height: number };
 }
 
-/** Height of the top menu bar in px. Kept in sync with scenes.css. */
 export const MENUBAR_H = 30;
-/** Vertical space reserved for the dock when maximizing, in px. */
 export const DOCK_RESERVED = 76;
 
 export interface MenuItem {

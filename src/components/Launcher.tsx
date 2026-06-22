@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOS } from "@/os/store";
-import { APPS } from "@/os/appsMeta";
+import { APPS, visibleApps } from "@/os/appsMeta";
 import { Icon } from "./Icon";
 import { AppIcon } from "./AppIcon";
+import { searchAll } from "@/hooks/useFs";
+import { getClientMode } from "@/lib/mode";
 import UserStatusBar from '@/components/UserStatusBar';
 
 // Apps prominently shown in the "Pinned" row.
@@ -21,17 +23,38 @@ export function Launcher() {
   const shutdown = useOS((s) => s.shutdown);
 
   const [q, setQ] = useState("");
+  const [serverResults, setServerResults] = useState<{
+    files: Array<{ id: string; name: string; type: string; kind: string; parentId: string | null }>;
+    notes: Array<{ id: string; title: string | null; preview: string }>;
+  }>({ files: [], notes: [] });
   const [powerOpen, setPowerOpen] = useState(false);
   const [ghost, setGhost] = useState<{ id: string; x: number; y: number } | null>(null);
   const launcherRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef<{ id: string; sx: number; sy: number; started: boolean } | null>(null);
+  const mode = getClientMode();
 
   const searching = q.trim().length > 0;
-  const results = APPS.filter((a) => a.name.toLowerCase().includes(q.trim().toLowerCase()));
-  const pinnedApps = PINNED_IDS.map((id) => APPS.find((a) => a.id === id)).filter(Boolean) as typeof APPS;
-  const otherApps = [...APPS]
-    .filter((a) => !PINNED_IDS.includes(a.id))
+  const visible = visibleApps(mode);
+  const results = visible.filter((a) => a.name.toLowerCase().includes(q.trim().toLowerCase()));
+  const pinnedApps = PINNED_IDS
+    .map((id) => visible.find((a) => a.id === id))
+    .filter(Boolean) as typeof APPS;
+  const otherApps = [...visible]
+    .filter((a) => !PINNED_IDS.includes(a.id) && a.showInLauncher !== false)
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Debounced server search
+  useEffect(() => {
+    if (!searching) { setServerResults({ files: [], notes: [] }); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const r = await searchAll(q);
+        if (!cancelled) setServerResults(r);
+      } catch { /* ignore */ }
+    }, 200);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [q, searching]);
   const close = () => toggleLauncher(false);
   const openAt = (path: string[]) => { setVaultInitialPath(path); openApp("mycomputer"); close(); };
 
@@ -117,10 +140,60 @@ export function Launcher() {
           <div className="launcher-content">
             {searching ? (
               <>
-                <div className="launcher-section-label">Results <span className="launcher-section-count">{results.length}</span></div>
-                <div className="launcher-grid">
-                  {results.map((a) => <Tile key={a.id} id={a.id} />)}
-                </div>
+                {results.length > 0 && (
+                  <>
+                    <div className="launcher-section-label">Apps <span className="launcher-section-count">{results.length}</span></div>
+                    <div className="launcher-grid">
+                      {results.map((a) => <Tile key={a.id} id={a.id} />)}
+                    </div>
+                  </>
+                )}
+                {serverResults.files.length > 0 && (
+                  <>
+                    <div className="launcher-section-label launcher-section-label-spaced">
+                      Files <span className="launcher-section-count">{serverResults.files.length}</span>
+                    </div>
+                    <div className="launcher-search-list">
+                      {serverResults.files.slice(0, 8).map((f) => (
+                        <button
+                          key={f.id}
+                          className="launcher-search-row"
+                          onClick={() => { openApp("mycomputer"); close(); }}
+                          title={f.name}
+                        >
+                          <Icon name={f.type === "folder" ? "folder" : "file"} size={16} />
+                          <span className="launcher-search-row-label">{f.name}</span>
+                          <span className="launcher-search-row-kind">{f.type === "folder" ? "Folder" : f.kind}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {serverResults.notes.length > 0 && (
+                  <>
+                    <div className="launcher-section-label launcher-section-label-spaced">
+                      Notes <span className="launcher-section-count">{serverResults.notes.length}</span>
+                    </div>
+                    <div className="launcher-search-list">
+                      {serverResults.notes.slice(0, 8).map((n) => (
+                        <button
+                          key={n.id}
+                          className="launcher-search-row"
+                          onClick={() => { useOS.getState().openNote(n.id); openApp("notes"); close(); }}
+                        >
+                          <Icon name="notes" size={16} />
+                          <span className="launcher-search-row-label">{n.title || n.preview.slice(0, 40)}</span>
+                          <span className="launcher-search-row-kind">Post-it</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {results.length === 0 && serverResults.files.length === 0 && serverResults.notes.length === 0 && (
+                  <div className="launcher-section-label" style={{ marginTop: 12, opacity: 0.6 }}>
+                    No matches for &ldquo;{q}&rdquo;
+                  </div>
+                )}
               </>
             ) : (
               <>

@@ -6,6 +6,7 @@ import { APP_MAP } from "@/os/appsMeta";
 import { Icon } from "./Icon";
 import { AppIcon } from "./AppIcon";
 import { DockSearch } from "./DockSearch";
+import { SystemTray } from "./SystemTray";
 
 export function Dock() {
   const windows = useOS((s) => s.windows);
@@ -138,6 +139,7 @@ export function Dock() {
           </div>
         </>
       )}
+      <SystemTray />
     </div>
   );
 }

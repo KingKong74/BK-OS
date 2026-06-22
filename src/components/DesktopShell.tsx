@@ -11,6 +11,7 @@ import { DesktopIcons, DESKTOP_PATH } from "./DesktopIcons";
 import { StickyNotes } from "./StickyNotes";
 import { ContextMenu } from "./ContextMenu";
 import { TaskView } from "./TaskView";
+import { CommandPalette } from "./CommandPalette";
 
 export function DesktopShell() {
   const windows = useOS((s) => s.windows);
@@ -105,6 +106,7 @@ export function DesktopShell() {
       {taskViewOpen && <TaskView />}
       <Dock />
       <ContextMenu />
+      <CommandPalette />
     </div>
   );
 }

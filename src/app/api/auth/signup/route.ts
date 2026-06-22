@@ -3,6 +3,7 @@ import { users } from '@/db/schema';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+import { seedFileSystemForUser } from '@/lib/fs-server';
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,6 +46,14 @@ export async function POST(req: NextRequest) {
         passwordHash,
       })
       .returning();
+
+    // Seed BK-OS default folder tree for this user
+    try {
+      await seedFileSystemForUser(newUser.id);
+    } catch (e) {
+      console.error('FS seed failed for new user:', e);
+      // Non-fatal: file system will seed on first /api/fs/list call too
+    }
 
     return NextResponse.json({
       id: newUser.id,

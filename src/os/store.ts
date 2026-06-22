@@ -120,6 +120,7 @@ interface OSState {
   notepadInitial: { path: string[]; name: string } | null;
   restartPhase: "off" | "bios" | "matrix";
   shutdownPhase: "off" | "running";
+  commandPaletteOpen: boolean;
 
   setScene: (scene: SceneId) => void;
   toggleLauncher: (open?: boolean) => void;
@@ -164,6 +165,7 @@ interface OSState {
   setRestartPhase: (phase: OSState["restartPhase"]) => void;
   setShutdownPhase: (phase: OSState["shutdownPhase"]) => void;
   finishShutdown: () => void;
+  setCommandPaletteOpen: (open: boolean) => void;
 
   openApp: (appId: string) => void;
   closeWindow: (id: string) => void;
@@ -218,6 +220,7 @@ export const useOS = create<OSState>()(
       notepadInitial: null,
       restartPhase: "off",
       shutdownPhase: "off",
+      commandPaletteOpen: false,
 
       setScene: (scene) => set({ scene }),
       toggleLauncher: (open) =>
@@ -255,6 +258,7 @@ export const useOS = create<OSState>()(
       finishShutdown: () => set({ poweredOff: true, shutdownPhase: "off" }),
       powerOn: () => set({ poweredOff: false, locked: true, restartPhase: "off", shutdownPhase: "off" }),
       sleep: () => set({ locked: true, launcherOpen: false, menu: null, taskViewOpen: false }),
+      setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open, launcherOpen: false }),
       restart: () => {
         set({
           windows: [],

@@ -6,10 +6,12 @@ import {
   FILE_NOTEPAD,
   FILE_PICTURES,
 } from "@/os/appAssets";
-import type { FileKind } from "@/os/vfs";
+
+// Accept any kind string — fall back to a sensible default for unknowns.
+export type FileKindLoose = string;
 
 /**
- * Folder icon. Closed by default, open via `is-open` class or via parent hover/select/active.
+ * Folder icon. Closed by default, open via `is-open` class.
  */
 export function FolderImg({ size = 24, open = false }: { size?: number; open?: boolean }) {
   return (
@@ -36,12 +38,12 @@ export function DriveImg({ size = 24 }: { size?: number }) {
 }
 
 /** Picks the right ICO for a file kind. */
-export function FileImg({ kind, size = 24 }: { kind: FileKind; size?: number }) {
+export function FileImg({ kind, size = 24 }: { kind: FileKindLoose; size?: number }) {
   const src =
-    kind === "image" ? FILE_PICTURES :
-    kind === "doc" ? FILE_NOTEPAD :
-    kind === "sheet" ? FILE_NOTEPAD :
-    kind === "pdf" ? FILE_NOTEPAD :
+    kind === "image" || kind === "video" ? FILE_PICTURES :
+    kind === "doc" || kind === "code" || kind === "config" ? FILE_NOTEPAD :
+    kind === "sheet" || kind === "pdf" ? FILE_NOTEPAD :
+    kind === "binary" || kind === "audio" ? FILE_ARCHIVE :
     FILE_EXEC;
   return (
     <img
@@ -54,6 +56,3 @@ export function FileImg({ kind, size = 24 }: { kind: FileKind; size?: number }) 
     />
   );
 }
-
-export const _folderClosed = FOLDER_CLOSED;
-export const _folderOpen = FOLDER_OPEN;
