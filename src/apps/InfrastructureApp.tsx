@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { ContainersTab } from "./infrastructure/ContainersTab";
 
-type Tab = "status" | "diagnose" | "webdav";
+type Tab = "status" | "containers" | "diagnose" | "webdav";
 
 interface Check {
   id: string;
@@ -28,6 +29,9 @@ export function InfrastructureApp() {
         <button className={"infra-tab" + (tab === "status" ? " is-active" : "")} onClick={() => setTab("status")}>
           <Icon name="shield" size={14} /> Status
         </button>
+        <button className={"infra-tab" + (tab === "containers" ? " is-active" : "")} onClick={() => setTab("containers")}>
+          <Icon name="server" size={14} /> Containers
+        </button>
         <button className={"infra-tab" + (tab === "diagnose" ? " is-active" : "")} onClick={() => setTab("diagnose")}>
           <Icon name="search" size={14} /> Diagnose
         </button>
@@ -37,6 +41,7 @@ export function InfrastructureApp() {
       </nav>
       <div className="infra-content">
         {tab === "status" && <StatusTab />}
+        {tab === "containers" && <ContainersTab />}
         {tab === "diagnose" && <DiagnoseTab />}
         {tab === "webdav" && <WebDAVTab />}
       </div>
