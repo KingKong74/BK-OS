@@ -640,7 +640,9 @@ input {
 /* Pane: grid + list views */
 .exp-pane { flex: 1; min-width: 0; overflow: auto; padding: 8px; background: var(--surface); }
 .exp-empty { color: var(--text-dim); padding: 32px; text-align: center; font-size: 12px; }
-.exp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 4px; align-content: start; }
+/* flex:1 + min-width:0 so the grid fills the flex-row .exp-body and computes
+   multiple columns — otherwise it collapses to one column (icons stack down). */
+.exp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 4px; align-content: start; align-self: start; flex: 1 1 auto; min-width: 0; }
 .exp-tile { border: 1px dotted transparent; background: transparent; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: var(--text); border-radius: 0; transition: background 0.08s ease; }
 .exp-tile:hover { background: rgba(49, 106, 197, 0.08); }
 .exp-tile.is-selected { background: var(--accent); color: #fff; border-color: var(--text-dim); border-style: dotted; }

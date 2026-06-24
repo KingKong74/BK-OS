@@ -3095,7 +3095,7 @@
    Explorer view modes — Small icons / Large icons (default) / Details.
    Large == the existing grid; Small packs a tighter grid with ~22px icons.
    ============================================================ */
-.exp-grid-small { grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 3px; }
+.exp-grid.exp-grid-small { grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 3px; }
 .exp-grid-small .exp-entry { padding: 4px 3px; gap: 2px; }
 .exp-grid-small .exp-entry-icon { height: 26px; }
 .exp-grid-small .exp-entry-label { font-size: 10.5px; }
