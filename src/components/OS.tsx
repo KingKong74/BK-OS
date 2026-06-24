@@ -12,6 +12,7 @@ import { ShutdownSequence } from "./ShutdownSequence";
 
 export function OS() {
   const scene = useOS((s) => s.scene);
+  const wallpaperColor = useOS((s) => s.wallpaperColor);
   const locked = useOS((s) => s.locked);
   const poweredOff = useOS((s) => s.poweredOff);
   const restartPhase = useOS((s) => s.restartPhase);
@@ -34,7 +35,11 @@ export function OS() {
   }
 
   return (
-    <div className="os-root" data-scene={scene}>
+    <div
+      className="os-root"
+      data-scene={scene}
+      style={wallpaperColor ? ({ "--wallpaper": wallpaperColor } as React.CSSProperties) : undefined}
+    >
       {poweredOff ? (
         <PoweredOff />
       ) : (

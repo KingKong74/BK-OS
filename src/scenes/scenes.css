@@ -2517,3 +2517,52 @@
 [data-scene="win98"] .launcher { max-height: calc(100vh - 92px); }
 [data-scene="win98-dark"] .launcher { max-height: calc(100vh - 92px); }
 [data-scene="win98-dark"] .launcher-empty-title { color: #e8e8ea; }
+
+/* ============================================================
+   Settings app — Win98 cards & controls (both day and night)
+   ============================================================ */
+[data-scene="win98"] .scene-card,
+[data-scene="win98-dark"] .scene-card {
+  border-radius: 0;
+  border: none;
+}
+[data-scene="win98"] .scene-card {
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+[data-scene="win98"] .scene-card.is-active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #ffffff, 0 0 0 1px #000080;
+}
+[data-scene="win98-dark"] .scene-card {
+  background: #2a2a32;
+  box-shadow: inset -1px -1px #050508, inset 1px 1px #4a4a52, inset -2px -2px #1a1a22, inset 2px 2px #3a3a44;
+}
+[data-scene="win98-dark"] .scene-card.is-active {
+  box-shadow: inset 1px 1px #050508, inset -1px -1px #4a4a52, 0 0 0 1px #4d8fd8;
+}
+[data-scene="win98"] .scene-swatch,
+[data-scene="win98-dark"] .scene-swatch { border-radius: 0; }
+[data-scene="win98"] .scene-swatch { border: 1px solid #000; }
+[data-scene="win98-dark"] .scene-swatch { border: 1px solid #050508; }
+
+[data-scene="win98"] .wp-chip { border-radius: 0; border: 1px solid #000; }
+[data-scene="win98-dark"] .wp-chip { border-radius: 0; border: 1px solid #050508; }
+[data-scene="win98"] .wp-swatch.is-active .wp-chip { box-shadow: 0 0 0 2px #000080; }
+[data-scene="win98-dark"] .wp-swatch.is-active .wp-chip { box-shadow: 0 0 0 2px #4d8fd8; }
+
+[data-scene="win98"] .settings-select {
+  border-radius: 0;
+  border: 1px solid #0a0a0a;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #ffffff;
+  background: #ffffff;
+  color: #000;
+}
+[data-scene="win98-dark"] .settings-select {
+  border-radius: 0;
+  border: 1px solid #050508;
+  box-shadow: inset 1px 1px #1a1a22, inset -1px -1px #4a4a52;
+  background: #1f1f26;
+  color: #e8e8ea;
+}
+[data-scene="win98"] .settings-badge,
+[data-scene="win98-dark"] .settings-badge { border-radius: 0; }

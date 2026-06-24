@@ -96,6 +96,8 @@ if (typeof window !== "undefined") {
 interface OSState {
   scene: SceneId;
   dockStyle: SceneId;
+  wallpaperColor: string | null; // null = follow the theme's default wallpaper
+  soundEffects: boolean;         // stub — UI only for now
   windows: WindowState[];
   focusedId: string | null;
   zCounter: number;
@@ -125,6 +127,8 @@ interface OSState {
 
   setScene: (scene: SceneId) => void;
   setDockStyle: (style: SceneId) => void;
+  setWallpaperColor: (color: string | null) => void;
+  setSoundEffects: (on: boolean) => void;
   toggleLauncher: (open?: boolean) => void;
   setSnapPreview: (zone: SnapZone | null) => void;
   openMenu: (x: number, y: number, items: MenuItem[]) => void;
@@ -274,6 +278,8 @@ export const useOS = create<OSState>()(
     (set, get) => ({
       scene: "win98",
       dockStyle: "win98", // defaults to the theme; selectable independently in Settings
+      wallpaperColor: null,
+      soundEffects: false,
       windows: [],
       focusedId: null,
       zCounter: 1,
@@ -311,6 +317,8 @@ export const useOS = create<OSState>()(
 
       setScene: (scene) => set({ scene }),
       setDockStyle: (style) => set({ dockStyle: style }),
+      setWallpaperColor: (color) => set({ wallpaperColor: color }),
+      setSoundEffects: (on) => set({ soundEffects: on }),
       toggleLauncher: (open) =>
         set((s) => ({ launcherOpen: open ?? !s.launcherOpen })),
       setSnapPreview: (zone) => set({ snapPreview: zone }),
@@ -767,6 +775,8 @@ export const useOS = create<OSState>()(
       partialize: (s) => ({
         scene: s.scene,
         dockStyle: s.dockStyle,
+        wallpaperColor: s.wallpaperColor,
+        soundEffects: s.soundEffects,
         windows: s.windows,
         focusedId: s.focusedId,
         zCounter: s.zCounter,
