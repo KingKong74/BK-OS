@@ -15,7 +15,6 @@ import { TreeApp } from "@/apps/TreeApp";
 import { HelpApp } from "@/apps/HelpApp";
 import { NotepadApp } from "@/apps/NotepadApp";
 import { SettingsApp } from "@/apps/SettingsApp";
-import { ProjectsApp } from "@/apps/ProjectsApp";
 import { InfrastructureApp } from "@/apps/InfrastructureApp";
 import { PlaceholderApp } from "@/apps/PlaceholderApp";
 import { WebApp } from "@/components/WebApp";
@@ -39,7 +38,6 @@ const COMPONENTS: Record<string, ComponentType> = {
   help: HelpApp,
   notepad: NotepadApp,
   settings: SettingsApp,
-  projects: ProjectsApp,
   infrastructure: InfrastructureApp,
 };
 

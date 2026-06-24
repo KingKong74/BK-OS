@@ -317,7 +317,6 @@ export const useOS = create<OSState>()(
       desktopShortcuts: [
         { id: "mycomputer", appId: "mycomputer" },
         { id: "recyclebin", appId: "recyclebin" },
-        { id: "projects", appId: "projects" },
         { id: "moniqr", appId: "moniqr" },
         { id: "claude", appId: "claude" },
         { id: "games", appId: "games" },

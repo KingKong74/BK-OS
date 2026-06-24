@@ -11,7 +11,7 @@ import { getClientMode } from "@/lib/mode";
 import UserStatusBar from '@/components/UserStatusBar';
 
 // Apps prominently shown in the "Pinned" row.
-const PINNED_IDS = ["mycomputer", "moniqr", "claude", "notepad", "settings", "projects"];
+const PINNED_IDS = ["mycomputer", "moniqr", "claude", "notepad", "settings"];
 
 // Category sections for the "all apps" area, in Start-menu order.
 const CATEGORY_ORDER: AppCategory[] = [

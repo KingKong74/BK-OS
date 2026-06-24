@@ -151,14 +151,6 @@ export const APPS: AppManifest[] = [
   // These appear ONLY in the private instance until they're real apps.
   // They will fall back to PlaceholderApp in registry.tsx until built.
   {
-    id: "projects", name: "Projects", icon: "code",
-    accent: "#caa46a", accentFg: "#26215C",
-    defaultSize: { width: 800, height: 520 },
-    origin: "addon-native", visibility: "private", category: "development",
-    description: "Every project as a folder. Commits, tasks, links, deploy status.",
-    pinned: true,
-  },
-  {
     id: "vault", name: "Vault", icon: "lock",
     accent: "#8a8a8a", accentFg: "#ffffff",
     defaultSize: { width: 760, height: 500 },
