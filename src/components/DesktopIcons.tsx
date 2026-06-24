@@ -22,8 +22,17 @@ const ORIGIN_Y = MENUBAR_H + 14;
 export const DESKTOP_PATH = ["C:", "Users", "Bailey", "Desktop"];
 const DESKTOP_PATH_KEY = DESKTOP_PATH.join("/");
 
+// Horizontal flow: place icons left-to-right in rows, wrapping to the next
+// row at the right edge of the desktop (macOS-Stacks-style, not a column).
+function iconsPerRow() {
+  if (typeof window === "undefined") return 8;
+  return Math.max(1, Math.floor((window.innerWidth - ORIGIN_X * 2) / CELL_W));
+}
 function defaultPos(index: number) {
-  return { x: ORIGIN_X, y: ORIGIN_Y + index * CELL_H };
+  const perRow = iconsPerRow();
+  const col = index % perRow;
+  const row = Math.floor(index / perRow);
+  return { x: ORIGIN_X + col * CELL_W, y: ORIGIN_Y + row * CELL_H };
 }
 function cellOf(p: { x: number; y: number }) {
   return {
@@ -229,9 +238,8 @@ export function DesktopIcons() {
       } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
         if (clipboard && clipboard.kind === "app-shortcut") {
           e.preventDefault();
-          const fallbackX = 16 + (items.length % 6) * 90;
-          const fallbackY = MENUBAR_H + 14 + (items.length % 8) * 98;
-          addDesktopShortcut(clipboard.appId, fallbackX, fallbackY);
+          const fallback = defaultPos(items.length);
+          addDesktopShortcut(clipboard.appId, fallback.x, fallback.y);
         }
       }
     };
