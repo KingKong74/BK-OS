@@ -3158,3 +3158,29 @@
 /* Running-task drag-reorder feedback */
 .dock-task.is-dragging { opacity: 0.55; transform: translateY(-1px); }
 .dock-task { transition: opacity 0.12s ease; }
+
+/* ============================================================
+   Light mode: pure-black, readable text + placeholders in search / text
+   inputs across the OS. Targeted (NOT the terminal, which is green-on-black).
+   ============================================================ */
+[data-scene="win98"] .launcher-search input,
+[data-scene="win98"] .dock-search input,
+[data-scene="win98"] .cmd-palette-input-row input,
+[data-scene="win98"] .exp-addr-input,
+[data-scene="win98"] .exp-search input,
+[data-scene="win98"] .exp-rename,
+[data-scene="win98"] .exp-rename-wrap input,
+[data-scene="win98"] .desktop-icon-rename,
+[data-scene="win98"] .notepad-area {
+  color: #000000;
+}
+[data-scene="win98"] .launcher-search input::placeholder,
+[data-scene="win98"] .dock-search input::placeholder,
+[data-scene="win98"] .cmd-palette-input-row input::placeholder,
+[data-scene="win98"] .exp-addr-input::placeholder,
+[data-scene="win98"] .exp-search input::placeholder,
+[data-scene="win98"] .infra-input::placeholder,
+[data-scene="win98"] .infra-textarea::placeholder {
+  color: #000000;
+  opacity: 0.4;
+}
