@@ -1,5 +1,7 @@
+import os from "node:os";
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
+import { isDockerAvailable } from "@/lib/docker";
 
 export type StatusLevel = "ok" | "warn" | "fail" | "unknown";
 
@@ -202,6 +204,56 @@ export async function gatherStatus(): Promise<Check[]> {
       detail: r.reason instanceof Error ? r.reason.message : "Check threw",
     };
   });
+}
+
+// ─── System overview ───────────────────────────────────────
+
+export interface SystemOverview {
+  hostname: string;
+  platform: string;
+  uptimeSeconds: number | null;
+  nodeVersion: string;
+  dockerVersion: string | null;
+  userCount: number | null;
+}
+
+export async function gatherSystemOverview(): Promise<SystemOverview> {
+  // Uptime: prefer /proc/uptime (the user asked for it), fall back to os.uptime().
+  let uptimeSeconds: number | null = null;
+  try {
+    const { promises: fs } = await import("node:fs");
+    const raw = await fs.readFile("/proc/uptime", "utf-8");
+    const first = parseFloat(raw.split(/\s+/)[0]);
+    uptimeSeconds = Number.isFinite(first) ? Math.floor(first) : null;
+  } catch {
+    try { uptimeSeconds = Math.floor(os.uptime()); } catch { uptimeSeconds = null; }
+  }
+
+  let userCount: number | null = null;
+  try {
+    const r = await db.execute(sql`SELECT COUNT(*)::int AS count FROM "user"`);
+    const rows = r.rows as unknown as { count: number }[];
+    userCount = Number(rows[0]?.count ?? 0);
+  } catch {
+    userCount = null;
+  }
+
+  let dockerVersion: string | null = null;
+  try {
+    const d = await isDockerAvailable();
+    dockerVersion = d.available ? d.version ?? null : null;
+  } catch {
+    dockerVersion = null;
+  }
+
+  return {
+    hostname: os.hostname(),
+    platform: `${os.type()} ${os.release()}`,
+    uptimeSeconds,
+    nodeVersion: process.version,
+    dockerVersion,
+    userCount,
+  };
 }
 
 export function overallLevel(checks: Check[]): StatusLevel {
