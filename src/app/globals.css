@@ -1900,3 +1900,14 @@ input:focus-visible,
 .settings2-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 36px 16px; color: var(--s2dim); }
 .settings2-empty-title { font-size: 13px; font-weight: 700; color: var(--s2text); }
 .settings2-empty-sub { font-size: 12px; max-width: 320px; line-height: 1.45; }
+
+/* Terminal — gitbash-style coloured prompt + output */
+.term-user { color: #5fd75f; font-weight: 600; }
+.term-path { color: #e5c07b; }
+.term-dollar { color: #c8c8c8; }
+.term-line.term-in { color: #e6e6e6; }
+.term-line.term-dir { color: #5aa0ff; }
+.term-line.term-err { color: #ff6b6b; }
+.term-line.term-ok { color: #5fd75f; }
+.term-line.term-accent { color: #56d7d7; }
+.term-line.term-dim { color: #6f8a78; }
