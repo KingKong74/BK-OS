@@ -2511,3 +2511,9 @@
 [data-dock="win98-dark"] .tray-btn { color: #cfcfd6; }
 [data-dock="win98-dark"] .tray-btn:hover { background: rgba(120, 150, 220, 0.22); }
 [data-dock="win98-dark"] .tray-clock { color: #e8e8ea; }
+
+/* Start menu: cap height so the app list scrolls instead of running off
+   the top of the screen, and keep it clear of the taskbar. */
+[data-scene="win98"] .launcher { max-height: calc(100vh - 92px); }
+[data-scene="win98-dark"] .launcher { max-height: calc(100vh - 92px); }
+[data-scene="win98-dark"] .launcher-empty-title { color: #e8e8ea; }

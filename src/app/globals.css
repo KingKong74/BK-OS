@@ -205,6 +205,7 @@ input {
 .launcher {
   width: 720px;
   max-width: 100%;
+  max-height: min(640px, calc(100vh - 48px));
   display: flex;
   background: var(--surface);
   border: var(--window-border);
@@ -215,6 +216,7 @@ input {
 .launcher-main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   padding: 18px 22px 12px;
   display: flex;
   flex-direction: column;
@@ -242,7 +244,23 @@ input {
 .launcher-content {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
 }
+/* Calm, on-brand empty state for universal search */
+.launcher-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  padding: 34px 16px;
+  color: var(--text-dim);
+}
+.launcher-empty-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.launcher-empty-sub { font-size: 12px; color: var(--text-dim); max-width: 230px; line-height: 1.4; }
 .launcher-section-label {
   font-size: 11px;
   font-weight: 600;

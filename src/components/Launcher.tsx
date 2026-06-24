@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useOS } from "@/os/store";
 import { APPS, visibleApps } from "@/os/appsMeta";
+import type { AppCategory } from "@/os/types";
 import { Icon } from "./Icon";
 import { AppIcon } from "./AppIcon";
 import { searchAll } from "@/hooks/useFs";
@@ -11,6 +12,20 @@ import UserStatusBar from '@/components/UserStatusBar';
 
 // Apps prominently shown in the "Pinned" row.
 const PINNED_IDS = ["mycomputer", "moniqr", "claude", "notepad", "settings", "projects"];
+
+// Category sections for the "all apps" area, in Start-menu order.
+const CATEGORY_ORDER: AppCategory[] = [
+  "system", "productivity", "development", "infrastructure", "media", "finance", "games",
+];
+const CATEGORY_LABELS: Record<AppCategory, string> = {
+  system: "System",
+  productivity: "Productivity",
+  development: "Development",
+  infrastructure: "Infrastructure",
+  media: "Media",
+  finance: "Finance",
+  games: "Games",
+};
 
 export function Launcher() {
   const openApp = useOS((s) => s.openApp);
@@ -42,6 +57,10 @@ export function Launcher() {
   const otherApps = [...visible]
     .filter((a) => !PINNED_IDS.includes(a.id) && a.showInLauncher !== false)
     .sort((a, b) => a.name.localeCompare(b.name));
+  // Group the remaining apps by category for the sectioned "all apps" view.
+  const groupedApps = CATEGORY_ORDER
+    .map((cat) => ({ cat, apps: otherApps.filter((a) => a.category === cat) }))
+    .filter((g) => g.apps.length > 0);
 
   // Debounced server search
   useEffect(() => {
@@ -57,6 +76,32 @@ export function Launcher() {
   }, [q, searching]);
   const close = () => toggleLauncher(false);
   const openAt = (path: string[]) => { setVaultInitialPath(path); openApp("mycomputer"); close(); };
+
+  // Close cleanly when clicking anywhere outside the panel, or on Escape.
+  // The listener is attached on the next tick so the click that *opened* the
+  // launcher doesn't immediately close it. Clicks on the Start button fall
+  // through to its own toggle handler.
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement;
+      if (launcherRef.current?.contains(target)) {
+        // Clicking elsewhere inside the panel dismisses the power popup.
+        if (!target.closest(".launcher-power-wrapper")) setPowerOpen(false);
+        return;
+      }
+      if (target.closest(".dock-launcher")) return;
+      close();
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    const t = setTimeout(() => document.addEventListener("pointerdown", onDown, true), 0);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("pointerdown", onDown, true);
+      window.removeEventListener("keydown", onKey);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const doLock = () => { close(); lock(); };
   const doSleep = () => { close(); sleep(); };
@@ -190,8 +235,10 @@ export function Launcher() {
                   </>
                 )}
                 {results.length === 0 && serverResults.files.length === 0 && serverResults.notes.length === 0 && (
-                  <div className="launcher-section-label" style={{ marginTop: 12, opacity: 0.6 }}>
-                    No matches for &ldquo;{q}&rdquo;
+                  <div className="launcher-empty">
+                    <Icon name="search" size={28} />
+                    <p className="launcher-empty-title">Nothing found</p>
+                    <p className="launcher-empty-sub">No apps, files, or notes match &ldquo;{q}&rdquo;.</p>
                   </div>
                 )}
               </>
@@ -201,10 +248,16 @@ export function Launcher() {
                 <div className="launcher-grid">
                   {pinnedApps.map((a) => <Tile key={a.id} id={a.id} />)}
                 </div>
-                <div className="launcher-section-label launcher-section-label-spaced">All apps</div>
-                <div className="launcher-grid">
-                  {otherApps.map((a) => <Tile key={a.id} id={a.id} />)}
-                </div>
+                {groupedApps.map(({ cat, apps }) => (
+                  <Fragment key={cat}>
+                    <div className="launcher-section-label launcher-section-label-spaced">
+                      {CATEGORY_LABELS[cat]}
+                    </div>
+                    <div className="launcher-grid">
+                      {apps.map((a) => <Tile key={a.id} id={a.id} />)}
+                    </div>
+                  </Fragment>
+                ))}
               </>
             )}
           </div>
