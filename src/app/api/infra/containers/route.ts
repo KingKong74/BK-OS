@@ -13,7 +13,7 @@ export async function GET() {
     return NextResponse.json({
       error: "Docker socket not available",
       detail: avail.error,
-      hint: "Mount /var/run/docker.sock into the bailey-os container. See PHASE-4-MIGRATION.md.",
+      hint: "Mount /var/run/docker.sock into the bailey-os container and add the host docker group. This gets wiped on every Dokploy redeploy — see the \"Docker socket\" section in CLAUDE.md for the re-apply commands.",
     }, { status: 503 });
   }
 

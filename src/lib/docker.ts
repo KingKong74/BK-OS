@@ -153,11 +153,14 @@ export async function isDockerAvailable(): Promise<{ available: boolean; error?:
     return { available: true, version: data.Version };
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown error";
+    // Surface the raw error in the server logs (Dokploy) so the *actual*
+    // failure is visible, not just the friendly message the client sees.
+    console.error(`[docker] isDockerAvailable failed for socket ${DOCKER_SOCKET}:`, msg);
     let friendly = msg;
     if (msg.includes("ENOENT")) {
-      friendly = "Docker socket not found at " + DOCKER_SOCKET + ". Mount /var/run/docker.sock into this container to enable Docker integration.";
+      friendly = `Docker socket not found at ${DOCKER_SOCKET}. The bind mount was most likely dropped on a Dokploy redeploy — re-add /var/run/docker.sock (and the host docker group). See the "Docker socket" section in CLAUDE.md.`;
     } else if (msg.includes("EACCES")) {
-      friendly = "Docker socket exists but is not readable. Check permissions or mount as read-write.";
+      friendly = `Docker socket exists at ${DOCKER_SOCKET} but isn't readable. The container needs the host's docker group GID added (--group-add). See the "Docker socket" section in CLAUDE.md.`;
     }
     return { available: false, error: friendly };
   }
