@@ -18,6 +18,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Put nextjs in a group matching the host's docker group GID (989) so it can
+# read a bind-mounted /var/run/docker.sock (root:docker, mode 0660) WITHOUT a
+# runtime --group-add. This makes the Infrastructure Containers tab survive
+# Dokploy redeploys, which otherwise drop ad-hoc `docker service update` flags.
+# (The matching bind mount lives in Dokploy's mount config; see CLAUDE.md.)
+RUN addgroup --system --gid 989 dockerhost && addgroup nextjs dockerhost
+
 # Copy Drizzle config + schema for migrations (needed at runtime)
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./
 COPY --from=builder --chown=nextjs:nodejs /app/src/db ./src/db

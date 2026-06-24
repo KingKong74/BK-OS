@@ -76,27 +76,23 @@ Everything lives under `src/app/` (App Router) **except WebDAV**: `src/pages/api
 ### Docker / Infrastructure app
 `src/lib/docker.ts` talks to the Docker Engine API over the Unix socket directly via `node:http` (`socketPath`), no SDK. The Infrastructure app (`src/apps/InfrastructureApp.tsx` + `infrastructure/ContainersTab.tsx`) lists containers, streams logs/stats, and runs start/stop/restart actions through `/api/infra/*`.
 
-#### Docker socket — mount + group (RE-APPLY AFTER EVERY DOKPLOY REDEPLOY)
-The Containers tab needs `/var/run/docker.sock` mounted into the bailey-os container, and the container must be in the host's `docker` group to read it. **Dokploy manages the Swarm service spec and wipes ad-hoc `docker service update` changes on every redeploy (i.e. every push to `main`).** So after a deploy the socket disappears and the tab shows "Docker socket not available" until you re-apply.
+#### Docker socket — mount + group (now PERSISTENT across redeploys)
+The Containers tab needs `/var/run/docker.sock` mounted into the bailey-os container, and the (non-root `nextjs`, uid 1001) container user must be in the host's `docker` group to read it (`root:docker`, mode 0660). Dokploy manages the Swarm service spec and **wipes ad-hoc `docker service update` flags on every redeploy**, so neither piece can rely on `docker service update`.
+
+Both pieces are now baked in so they survive redeploys — **no manual re-apply needed**:
+1. **Mount** — a `bind` mount `/var/run/docker.sock → /var/run/docker.sock` lives in Dokploy's own config (a row in the `mount` table of the `dokploy` Postgres DB, `applicationId='_svNEGEELmPAgNpGBNmcF'`). Dokploy emits it into the service spec on every deploy. To edit it the supported way: Dokploy UI → bailey-os → Advanced → Volumes/Mounts.
+2. **Group** — the `Dockerfile` adds `nextjs` to a group with GID **989** (`addgroup --system --gid 989 dockerhost && addgroup nextjs dockerhost`). Image-level group membership grants socket access without `--group-add`. (GID 989 is the host's `docker` group on this mini PC — if the host changes, update this.)
 
 Facts for this host (mini PC):
-- Service name: `baileyos-bkos-chcncm`
-- Host socket: `/run/docker.sock` (symlinked at `/var/run/docker.sock`), owned `root:docker`
-- Host `docker` group GID: **989**
+- Service name: `baileyos-bkos-chcncm` · App id in Dokploy: `_svNEGEELmPAgNpGBNmcF`
+- Host socket: `/run/docker.sock` (symlinked at `/var/run/docker.sock`), owned `root:docker`, GID **989**
 
-Re-apply (each command triggers a ~30s rolling update; both can be combined into one):
+Verify after a deploy (no manual step should be needed):
 ```bash
-docker service update \
-  --mount-add type=bind,source=/run/docker.sock,target=/var/run/docker.sock \
-  --group-add 989 \
-  baileyos-bkos-chcncm
+docker service inspect baileyos-bkos-chcncm --format '{{json .Spec.TaskTemplate.ContainerSpec.Mounts}}'   # includes docker.sock
+docker exec $(docker ps -q --filter name=baileyos-bkos) sh -c 'id; ls -la /var/run/docker.sock'           # nextjs in group 989; socket present
 ```
-Verify:
-```bash
-docker service inspect baileyos-bkos-chcncm --format '{{json .Spec.TaskTemplate.ContainerSpec.Mounts}}'   # should include docker.sock
-docker exec $(docker ps -q --filter name=baileyos-bkos) ls -la /var/run/docker.sock                        # should exist
-```
-**For a permanent fix** (so it survives redeploys), add the bind mount in the Dokploy UI: bailey-os service → Advanced → Volumes/Mounts → add bind mount `/var/run/docker.sock` → `/var/run/docker.sock`. The `--group-add 989` may still need re-applying if Dokploy's UI doesn't expose supplementary groups. `src/lib/docker.ts` logs the raw socket error to the server logs (visible in Dokploy) when this is missing.
+Emergency fallback (if the above ever regresses — e.g. host docker GID changed): re-add ad-hoc with `docker service update --mount-add type=bind,source=/run/docker.sock,target=/var/run/docker.sock --group-add 989 baileyos-bkos-chcncm` (~30s rolling restart). `src/lib/docker.ts` logs the raw socket error to the server logs (visible in Dokploy) when this is missing.
 
 ## Conventions
 
