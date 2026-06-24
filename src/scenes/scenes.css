@@ -2610,3 +2610,89 @@
    rather than the same flat grey as the surrounding chrome. */
 [data-scene="win98-dark"] .exp-pane { background: #1f1f26; }
 [data-scene="win98-dark"] .help-content code { background: #1f1f26; color: #e8e8ea; box-shadow: inset 1px 1px #1a1a22, inset -1px -1px #4a4a52; }
+
+/* ============================================================
+   Midnight taskbar — the slick near-black dock with an electric-blue
+   glow. Independent of [data-scene]; looks good under light OR dark OS
+   chrome. Complete, self-contained colour block — does NOT inherit the
+   win98 dock styles (shared layout rules under [data-dock] still apply).
+   ============================================================ */
+.dock[data-dock="midnight"] {
+  background: linear-gradient(180deg, #11111f 0%, #0a0a14 100%);
+  /* bright 1px top edge highlight for depth, plus a faint blue inner glow */
+  box-shadow: inset 0 1px #3d5a9a, inset 0 2px rgba(77, 159, 255, 0.12), 0 -1px 0 #050510;
+}
+/* Start button: iconic shape, dark navy with an accent outline + soft glow */
+[data-dock="midnight"] .dock-launcher {
+  background: linear-gradient(180deg, #1c2950 0%, #16213e 100%);
+  color: #7fc0ff;
+  box-shadow: inset 0 0 0 1px rgba(77, 159, 255, 0.55), 0 0 6px rgba(77, 159, 255, 0.18);
+  text-shadow: 0 0 5px rgba(77, 159, 255, 0.5);
+}
+[data-dock="midnight"] .dock-launcher:hover {
+  background: linear-gradient(180deg, #233164 0%, #1a2748 100%);
+  box-shadow: inset 0 0 0 1px rgba(109, 179, 255, 0.85), 0 0 10px rgba(77, 159, 255, 0.4);
+}
+[data-dock="midnight"] .dock-launcher:active {
+  box-shadow: inset 0 0 0 1px rgba(77, 159, 255, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+/* Pinned app tiles + task-view: flat dark with a thin cool border */
+[data-dock="midnight"] .dock-tile,
+[data-dock="midnight"] .dock-taskview {
+  background: #12121f;
+  color: #c8d2e6;
+  box-shadow: inset 0 0 0 1px #232a44;
+}
+[data-dock="midnight"] .dock-app:hover .dock-tile,
+[data-dock="midnight"] .dock-taskview:hover {
+  background: #1a2138;
+  box-shadow: inset 0 0 0 1px rgba(77, 159, 255, 0.55), 0 0 8px rgba(77, 159, 255, 0.22);
+}
+/* Etched divider with a faint blue tint */
+[data-dock="midnight"] .dock-divider {
+  border-left-color: #05050d;
+  border-right-color: #2a3a6a;
+}
+/* Running-task buttons: dark, with a blue glow when active/hovered */
+[data-dock="midnight"] .dock-task {
+  background: #12121f;
+  color: #c8d2e6;
+  box-shadow: inset 0 0 0 1px #232a44;
+}
+[data-dock="midnight"] .dock-task:hover:not(.is-active) {
+  background: #1a2138;
+  box-shadow: inset 0 0 0 1px rgba(77, 159, 255, 0.4);
+}
+[data-dock="midnight"] .dock-task.is-active {
+  background: linear-gradient(180deg, #1c2950 0%, #141d36 100%);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(77, 159, 255, 0.75), inset 0 1px 0 rgba(77, 159, 255, 0.25), 0 0 8px rgba(77, 159, 255, 0.3);
+}
+[data-dock="midnight"] .dock-task.is-min { opacity: 0.5; }
+/* Search field: deep inset, accent on focus */
+[data-dock="midnight"] .dock-search {
+  background: #0c0c16;
+  color: #c8d2e6;
+  box-shadow: inset 0 0 0 1px #232a44, inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+[data-dock="midnight"] .dock-search input { color: #dbe3f2; }
+[data-dock="midnight"] .dock-search input::placeholder { color: #6a7694; }
+[data-dock="midnight"] .dock-search:focus-within {
+  box-shadow: inset 0 0 0 1px rgba(77, 159, 255, 0.7), 0 0 8px rgba(77, 159, 255, 0.2);
+}
+/* System tray + clock: clean, monospace, easy to read on near-black */
+[data-dock="midnight"] .system-tray {
+  background: #0c0c16;
+  box-shadow: inset 0 0 0 1px #1c2238;
+}
+[data-dock="midnight"] .tray-btn { color: #aab6d4; }
+[data-dock="midnight"] .tray-btn:hover {
+  background: rgba(77, 159, 255, 0.18);
+  color: #ffffff;
+}
+[data-dock="midnight"] .tray-clock {
+  color: #cdd8f0;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}

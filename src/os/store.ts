@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { APP_MAP, APPS } from "./appsMeta";
 import { boundsForZone } from "./snap";
-import { MENUBAR_H, DOCK_RESERVED, type MenuItem, type MenuState, type SceneId, type SnapZone, type WindowState } from "./types";
+import { MENUBAR_H, DOCK_RESERVED, type DockStyleId, type MenuItem, type MenuState, type SceneId, type SnapZone, type WindowState } from "./types";
 import type { FsNode } from "./vfs";
 
 export type NoteColor = "yellow" | "pink" | "blue" | "green" | "orange";
@@ -95,7 +95,7 @@ if (typeof window !== "undefined") {
 
 interface OSState {
   scene: SceneId;
-  dockStyle: SceneId;
+  dockStyle: DockStyleId;
   wallpaperColor: string | null; // null = follow the theme's default wallpaper
   soundEffects: boolean;         // stub — UI only for now
   windows: WindowState[];
@@ -126,7 +126,7 @@ interface OSState {
   commandPaletteOpen: boolean;
 
   setScene: (scene: SceneId) => void;
-  setDockStyle: (style: SceneId) => void;
+  setDockStyle: (style: DockStyleId) => void;
   setWallpaperColor: (color: string | null) => void;
   setSoundEffects: (on: boolean) => void;
   toggleLauncher: (open?: boolean) => void;

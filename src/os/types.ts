@@ -3,6 +3,10 @@ export type ThemeId = "win98" | "win98-dark";
 // Backward-compat: many files still reference SceneId. Alias it.
 export type SceneId = ThemeId;
 
+// The taskbar can be styled independently of the OS theme. "midnight" is the
+// dramatic near-black look that pairs well with either light or dark chrome.
+export type DockStyleId = "win98" | "win98-dark" | "midnight";
+
 export type IconName =
   | "lock"
   | "calculator"

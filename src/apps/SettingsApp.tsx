@@ -1,7 +1,7 @@
 "use client";
 
 import { useOS } from "@/os/store";
-import type { ThemeId } from "@/os/types";
+import type { ThemeId, DockStyleId } from "@/os/types";
 
 const THEMES: { id: ThemeId; name: string; blurb: string; swatch: { bg: string; window: string; title: string } }[] = [
   {
@@ -19,7 +19,7 @@ const THEMES: { id: ThemeId; name: string; blurb: string; swatch: { bg: string; 
 ];
 
 // Taskbar styles mirror the theme cards but only re-skin the dock.
-const DOCKS: { id: ThemeId; name: string; blurb: string; bar: string; bevelLight: string; bevelDark: string; start: string; startFg: string }[] = [
+const DOCKS: { id: DockStyleId; name: string; blurb: string; bar: string; bevelLight: string; bevelDark: string; start: string; startFg: string; glow?: string }[] = [
   {
     id: "win98",
     name: "Silver",
@@ -31,6 +31,12 @@ const DOCKS: { id: ThemeId; name: string; blurb: string; bar: string; bevelLight
     name: "Win98 at Night",
     blurb: "A dark taskbar — pairs with either OS theme.",
     bar: "#2a2a32", bevelLight: "#4a4a52", bevelDark: "#1a1a22", start: "#2a2a32", startFg: "#e8e8ea",
+  },
+  {
+    id: "midnight",
+    name: "Midnight",
+    blurb: "Near-black with an electric-blue glow. The slick one.",
+    bar: "#0a0a14", bevelLight: "#3d5a9a", bevelDark: "#050510", start: "#16213e", startFg: "#6db3ff", glow: "#4d9fff",
   },
 ];
 
@@ -97,9 +103,9 @@ export function SettingsApp() {
                   display: "flex", alignItems: "center", gap: 3, padding: "0 3px",
                 }}
               >
-                <span style={{ width: 16, height: 12, background: dk.start, color: dk.startFg, boxShadow: `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
-                <span style={{ width: 10, height: 12, background: dk.bar, boxShadow: `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
-                <span style={{ width: 10, height: 12, background: dk.bar, boxShadow: `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
+                <span style={{ width: 16, height: 12, background: dk.start, color: dk.startFg, boxShadow: dk.glow ? `inset 0 0 0 1px ${dk.glow}, 0 0 5px ${dk.glow}` : `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
+                <span style={{ width: 10, height: 12, background: dk.bar, boxShadow: dk.glow ? `inset 0 0 0 1px ${dk.bevelLight}` : `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
+                <span style={{ width: 10, height: 12, background: dk.bar, boxShadow: dk.glow ? `inset 0 0 0 1px ${dk.bevelLight}` : `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
               </span>
             </span>
             <span className="scene-name">{dk.name}</span>
