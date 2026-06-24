@@ -108,7 +108,7 @@ export function Dock() {
         })}
       </div>
 
-      <span className="dock-divider" />
+      {windows.length > 0 && <span className="dock-divider" />}
 
       <div className="dock-tasks">
         {windows.length > 0 && (
