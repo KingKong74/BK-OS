@@ -130,10 +130,13 @@ export function Launcher() {
     drag.current = null;
     try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
     if (!d.started) { setGhost(null); openApp(d.id); close(); return; }
-    const r = launcherRef.current?.getBoundingClientRect();
-    const outside = !r || e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
     setGhost(null);
-    if (outside) {
+    // Drop only counts on the desktop — not over the launcher panel itself or
+    // the dock. The overlay is pointer-events:none while dragging, so the
+    // element under the cursor is whatever is actually beneath it.
+    const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+    const onDesktop = el && !el.closest(".launcher") && !el.closest(".dock");
+    if (onDesktop) {
       addDesktopShortcut(d.id, e.clientX - 40, e.clientY - 40);
       close();
     }
