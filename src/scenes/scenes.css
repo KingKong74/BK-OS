@@ -3090,3 +3090,12 @@
 [data-dock="win98-dark"] .dock-app.is-running::after { background: #6da0e0; }
 [data-dock="midnight"] .dock-app.is-running::after { background: #4d9fff; box-shadow: 0 0 5px rgba(77,159,255,0.6); }
 [data-dock="centered"] .dock-app.is-running::after { background: #4d9fff; box-shadow: 0 0 5px rgba(77,159,255,0.6); }
+
+/* ============================================================
+   Explorer view modes — Small icons / Large icons (default) / Details.
+   Large == the existing grid; Small packs a tighter grid with ~22px icons.
+   ============================================================ */
+.exp-grid-small { grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 3px; }
+.exp-grid-small .exp-entry { padding: 4px 3px; gap: 2px; }
+.exp-grid-small .exp-entry-icon { height: 26px; }
+.exp-grid-small .exp-entry-label { font-size: 10.5px; }

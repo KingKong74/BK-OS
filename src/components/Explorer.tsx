@@ -44,7 +44,11 @@ export function Explorer({ initialPath: _initialPath = [] as string[] }: { initi
   const [stack, setStack] = useState<PathSeg[]>([ROOT_SEG]);
   const [back, setBack] = useState<PathSeg[][]>([]);
   const [fwd, setFwd] = useState<PathSeg[][]>([]);
-  const [view, setView] = useState<"grid" | "list">("grid");
+  // View mode is a global preference (persisted in the store) so it's
+  // consistent across Explorer windows and survives reloads.
+  const view = useOS((s) => s.explorerView);
+  const setView = useOS((s) => s.setExplorerView);
+  const iconSize = view === "small" ? 22 : 32;
   const [selected, setSelected] = useState<string | null>(null);
   const [editingAddr, setEditingAddr] = useState(false);
   const [addrDraft, setAddrDraft] = useState("");
@@ -269,8 +273,9 @@ export function Explorer({ initialPath: _initialPath = [] as string[] }: { initi
         <button className="exp-menu-item" onClick={(e) => {
           const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
           openMenu(r.left, r.bottom, [
-            { label: view === "grid" ? "✓ Icons" : "Icons", icon: "grid", onSelect: () => setView("grid") },
-            { label: view === "list" ? "✓ Details" : "Details", icon: "list", onSelect: () => setView("list") },
+            { label: (view === "small" ? "✓ " : "") + "Small icons", icon: "grid", onSelect: () => setView("small") },
+            { label: (view === "large" ? "✓ " : "") + "Large icons", icon: "grid", onSelect: () => setView("large") },
+            { label: (view === "details" ? "✓ " : "") + "Details", icon: "list", onSelect: () => setView("details") },
             { separator: true },
             { label: "Refresh", icon: "refresh", onSelect: () => refresh() },
           ]);
@@ -328,8 +333,8 @@ export function Explorer({ initialPath: _initialPath = [] as string[] }: { initi
           </div>
         )}
         {!loading && entries.length > 0 && (
-          view === "grid" ? (
-            <div className="exp-grid">
+          view !== "details" ? (
+            <div className={"exp-grid exp-grid-" + view}>
               {entries.map((node) => (
                 <button
                   key={node.id}
@@ -340,7 +345,7 @@ export function Explorer({ initialPath: _initialPath = [] as string[] }: { initi
                   title={node.name}
                 >
                   <div className="exp-entry-icon">
-                    {node.type === "folder" ? <FolderImg size={32} /> : <FileImg size={32} kind={node.kind as never} />}
+                    {node.type === "folder" ? <FolderImg size={iconSize} /> : <FileImg size={iconSize} kind={node.kind as never} />}
                   </div>
                   {renamingId === node.id ? (
                     <input
