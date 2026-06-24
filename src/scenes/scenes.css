@@ -3099,3 +3099,7 @@
 .exp-grid-small .exp-entry { padding: 4px 3px; gap: 2px; }
 .exp-grid-small .exp-entry-icon { height: 26px; }
 .exp-grid-small .exp-entry-label { font-size: 10.5px; }
+
+/* Running-task drag-reorder feedback */
+.dock-task.is-dragging { opacity: 0.55; transform: translateY(-1px); }
+.dock-task { transition: opacity 0.12s ease; }

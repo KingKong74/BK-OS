@@ -190,6 +190,7 @@ interface OSState {
   setBounds: (id: string, b: { x: number; y: number; width: number; height: number }, snap?: SnapZone | null) => void;
   applySnap: (id: string, zone: SnapZone) => void;
   taskbarActivate: (id: string) => void;
+  setWindowOrder: (ids: string[]) => void;
 }
 
 function clamp(n: number, min: number, max: number) {
@@ -786,6 +787,16 @@ export const useOS = create<OSState>()(
               win.id === id ? { ...win, z, minimized: false } : win
             ),
           };
+        }),
+
+      // Reorder the windows array to match `ids` (taskbar drag-reorder).
+      // Any windows not listed are appended, so we never drop one.
+      setWindowOrder: (ids) =>
+        set((s) => {
+          const byId = new Map(s.windows.map((w) => [w.id, w]));
+          const ordered = ids.map((id) => byId.get(id)).filter(Boolean) as WindowState[];
+          const extra = s.windows.filter((w) => !ids.includes(w.id));
+          return { windows: [...ordered, ...extra] };
         }),
     }),
     {

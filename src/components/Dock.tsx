@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useOS } from "@/os/store";
 import { APP_MAP } from "@/os/appsMeta";
 import { Icon } from "./Icon";
@@ -21,9 +21,51 @@ export function Dock() {
   const openMenu = useOS((s) => s.openMenu);
   const togglePin = useOS((s) => s.togglePin);
   const setPinnedOrder = useOS((s) => s.setPinnedOrder);
+  const setWindowOrder = useOS((s) => s.setWindowOrder);
 
   const pinRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ id: string; x: number; moved: boolean } | null>(null);
+  const taskRef = useRef<HTMLDivElement>(null);
+  const taskDrag = useRef<{ id: string; x: number; moved: boolean } | null>(null);
+  const [draggingTask, setDraggingTask] = useState<string | null>(null);
+
+  // Drag-reorder running task buttons within the tasks group only.
+  const reorderTaskTo = (clientX: number, id: string) => {
+    const cont = taskRef.current;
+    if (!cont) return;
+    const btns = Array.from(cont.querySelectorAll<HTMLElement>("[data-task]"));
+    let target = btns.length - 1;
+    for (let i = 0; i < btns.length; i++) {
+      const r = btns[i].getBoundingClientRect();
+      if (clientX < r.left + r.width / 2) { target = i; break; }
+    }
+    const order = windows.map((w) => w.id);
+    const cur = order.indexOf(id);
+    if (cur === -1 || target === cur) return;
+    order.splice(cur, 1);
+    order.splice(target, 0, id);
+    setWindowOrder(order);
+  };
+  const onTaskDown = (e: React.PointerEvent, id: string) => {
+    if (e.button !== 0) return;
+    taskDrag.current = { id, x: e.clientX, moved: false };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onTaskMove = (e: React.PointerEvent, id: string) => {
+    if (!taskDrag.current) return;
+    if (!taskDrag.current.moved && Math.abs(e.clientX - taskDrag.current.x) < 5) return;
+    if (!taskDrag.current.moved) setDraggingTask(id);
+    taskDrag.current.moved = true;
+    reorderTaskTo(e.clientX, id);
+  };
+  const onTaskUp = (e: React.PointerEvent, id: string) => {
+    if (!taskDrag.current) return;
+    const moved = taskDrag.current.moved;
+    taskDrag.current = null;
+    setDraggingTask(null);
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    if (!moved) taskbarActivate(id);
+  };
 
   const reorderTo = (clientX: number, id: string) => {
     const cont = pinRef.current;
@@ -112,7 +154,7 @@ export function Dock() {
 
       {windows.length > 0 && <span className="dock-divider" />}
 
-      <div className="dock-tasks">
+      <div className="dock-tasks" ref={taskRef}>
         {windows.length > 0 && (
           <>
             {windows.map((w) => {
@@ -122,8 +164,11 @@ export function Dock() {
               return (
                 <button
                   key={w.id}
-                  className={"dock-task" + (active ? " is-active" : "") + (w.minimized ? " is-min" : "")}
-                  onClick={() => taskbarActivate(w.id)}
+                  data-task={w.id}
+                  className={"dock-task" + (active ? " is-active" : "") + (w.minimized ? " is-min" : "") + (draggingTask === w.id ? " is-dragging" : "")}
+                  onPointerDown={(e) => onTaskDown(e, w.id)}
+                  onPointerMove={(e) => onTaskMove(e, w.id)}
+                  onPointerUp={(e) => onTaskUp(e, w.id)}
                   title={meta?.name}
                   onContextMenu={(e) => {
                     e.preventDefault();
