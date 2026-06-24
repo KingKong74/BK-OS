@@ -44,9 +44,8 @@ export function Launcher() {
     notes: Array<{ id: string; title: string | null; preview: string }>;
   }>({ files: [], notes: [] });
   const [powerOpen, setPowerOpen] = useState(false);
-  const [ghost, setGhost] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
   const launcherRef = useRef<HTMLDivElement | null>(null);
-  const drag = useRef<{ id: string; sx: number; sy: number; started: boolean } | null>(null);
   const mode = getClientMode();
 
   const searching = q.trim().length > 0;
@@ -109,37 +108,35 @@ export function Launcher() {
   const doShutdown = () => { close(); shutdown(); };
   const doRestart = () => { close(); restart(); };
 
-  // Custom pointer-event drag of any tile onto the desktop
-  const onTileDown = (e: React.PointerEvent, id: string) => {
-    if (e.button !== 0) return;
-    drag.current = { id, sx: e.clientX, sy: e.clientY, started: false };
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  // Native HTML5 drag of an app tile onto the desktop → creates a shortcut.
+  const onTileDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData("application/x-bailey-app", id);
+    e.dataTransfer.effectAllowed = "copy";
+    setDragId(id);
   };
-  const onTileMove = (e: React.PointerEvent) => {
-    const d = drag.current;
-    if (!d) return;
-    const dx = e.clientX - d.sx;
-    const dy = e.clientY - d.sy;
-    if (!d.started && Math.hypot(dx, dy) < 6) return;
-    d.started = true;
-    setGhost({ id: d.id, x: e.clientX, y: e.clientY });
-  };
-  const onTileUp = (e: React.PointerEvent) => {
-    const d = drag.current;
-    if (!d) return;
-    drag.current = null;
-    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-    if (!d.started) { setGhost(null); openApp(d.id); close(); return; }
-    setGhost(null);
-    // Drop only counts on the desktop — not over the launcher panel itself or
-    // the dock. The overlay is pointer-events:none while dragging, so the
-    // element under the cursor is whatever is actually beneath it.
-    const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
-    const onDesktop = el && !el.closest(".launcher") && !el.closest(".dock");
-    if (onDesktop) {
-      addDesktopShortcut(d.id, e.clientX - 40, e.clientY - 40);
-      close();
+
+  // Drop handling lives on the overlay: while the launcher is open it covers
+  // the whole screen, so a drop "on the desktop" lands on the overlay backdrop
+  // (outside the panel). Dropping on the panel or over the dock cancels.
+  const onOverlayDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("application/x-bailey-app")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
     }
+  };
+  const onOverlayDrop = (e: React.DragEvent) => {
+    const id = e.dataTransfer.getData("application/x-bailey-app");
+    setDragId(null);
+    if (!id) return;
+    e.preventDefault();
+    if ((e.target as HTMLElement).closest(".launcher")) return; // on the panel → cancel
+    const dock = document.querySelector(".dock");
+    if (dock) {
+      const r = dock.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return; // on the dock → cancel
+    }
+    addDesktopShortcut(id, e.clientX - 36, e.clientY - 36);
+    close();
   };
 
   const Tile = ({ id }: { id: string }) => {
@@ -147,11 +144,11 @@ export function Launcher() {
     if (!meta) return null;
     return (
       <button
-        className="launcher-app"
-        onPointerDown={(e) => onTileDown(e, id)}
-        onPointerMove={onTileMove}
-        onPointerUp={onTileUp}
-        onPointerCancel={onTileUp}
+        className={"launcher-app" + (dragId === id ? " is-dragging" : "")}
+        draggable
+        onDragStart={(e) => onTileDragStart(e, id)}
+        onDragEnd={() => setDragId(null)}
+        onClick={() => { openApp(id); close(); }}
       >
         <span className="launcher-tile">
           <AppIcon id={id} size={32} />
@@ -163,13 +160,15 @@ export function Launcher() {
 
   return (
     <div
-      className={"launcher-overlay" + (ghost ? " is-dragging" : "")}
+      className="launcher-overlay"
       data-launcher={launcherStyle}
-      onClick={ghost ? undefined : close}
+      onClick={close}
+      onDragOver={onOverlayDragOver}
+      onDrop={onOverlayDrop}
     >
       <div
         ref={launcherRef}
-        className={"launcher" + (ghost ? " is-ghost-active" : "")}
+        className="launcher"
         data-launcher={launcherStyle}
         onClick={(e) => e.stopPropagation()}
       >
@@ -317,13 +316,6 @@ export function Launcher() {
           </div>
         </div>
       </div>
-      
-
-      {ghost && (
-        <div className="launcher-drag-ghost" style={{ left: ghost.x + 10, top: ghost.y + 10 }}>
-          <AppIcon id={ghost.id} size={32} />
-        </div>
-      )}
     </div>
   );
 }

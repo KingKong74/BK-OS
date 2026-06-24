@@ -1913,3 +1913,6 @@ input:focus-visible,
 .term-line.term-ok { color: #5fd75f; }
 .term-line.term-accent { color: #56d7d7; }
 .term-line.term-dim { color: #6f8a78; }
+
+/* Launcher tile being dragged to the desktop (native DnD) */
+.launcher-app.is-dragging { opacity: 0.4; }
