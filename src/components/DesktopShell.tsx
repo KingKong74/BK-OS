@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useOS } from "@/os/store";
 import { MenuBar } from "./MenuBar";
 import { Dock } from "./Dock";
@@ -24,6 +25,24 @@ export function DesktopShell() {
   const addDesktopShortcut = useOS((s) => s.addDesktopShortcut);
   const setIconPosition = useOS((s) => s.setIconPosition);
   const clipboard = useOS((s) => s.clipboard);
+  const reflowViewport = useOS((s) => s.reflowViewport);
+
+  // Keep windows on-screen when the viewport changes size. rAF-debounced so a
+  // drag-resize of the browser doesn't thrash the store.
+  useEffect(() => {
+    // Persisted windows may have come from a larger screen — pull them back in.
+    reflowViewport();
+    let raf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(reflowViewport);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(raf);
+    };
+  }, [reflowViewport]);
 
   // Create a new server-backed item on the Desktop folder.
   // Returns a promise; we fire-and-forget from the menu callback.

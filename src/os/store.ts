@@ -174,6 +174,7 @@ interface OSState {
   resizeWindow: (id: string, width: number, height: number) => void;
   minimizeWindow: (id: string) => void;
   toggleMaximize: (id: string) => void;
+  reflowViewport: () => void;
   setBounds: (id: string, b: { x: number; y: number; width: number; height: number }, snap?: SnapZone | null) => void;
   applySnap: (id: string, zone: SnapZone) => void;
   taskbarActivate: (id: string) => void;
@@ -181,6 +182,89 @@ interface OSState {
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
+}
+
+// ─── Window placement (Win98-style cascade + on-screen clamping) ───
+//
+// Win98 opened each new window down-and-right from the last by a fixed step,
+// and once the cascade ran off the work area it reset to the top-left origin.
+// We emulate that, but additionally: clamp the size to fit small viewports,
+// nudge each fresh cascade run sideways so they don't perfectly overlap, and
+// keep a grabbable strip of every titlebar on-screen.
+
+const CASCADE_STEP = 28;          // px each subsequent window is offset by
+const WORK_MARGIN = 8;            // breathing room around the desktop work area
+const MIN_TITLE_VISIBLE = 34;     // keep at least this much of a titlebar reachable
+
+function viewportSize(): { vw: number; vh: number } {
+  if (typeof window === "undefined") return { vw: 1280, vh: 800 };
+  return { vw: window.innerWidth, vh: window.innerHeight };
+}
+
+function workArea(vw: number, vh: number) {
+  return {
+    left: WORK_MARGIN,
+    top: MENUBAR_H + WORK_MARGIN,
+    right: vw - WORK_MARGIN,
+    bottom: vh - DOCK_RESERVED - WORK_MARGIN,
+  };
+}
+
+/** Shrink a window's size so it fits the work area (with margins) on small screens. */
+function fitSize(width: number, height: number, vw: number, vh: number) {
+  const wa = workArea(vw, vh);
+  const maxW = Math.max(320, wa.right - wa.left);
+  const maxH = Math.max(200, wa.bottom - wa.top);
+  return { width: Math.min(width, maxW), height: Math.min(height, maxH) };
+}
+
+/** Cascade placement for the Nth concurrently-open window. */
+function cascadePlacement(
+  index: number,
+  size: { width: number; height: number },
+  vw: number,
+  vh: number
+) {
+  const wa = workArea(vw, vh);
+  const { width, height } = fitSize(size.width, size.height, vw, vh);
+  const baseX = wa.left + 16;
+  const baseY = wa.top + 8;
+  // How many steps fit before the window would spill past the work area.
+  const spanX = Math.max(0, wa.right - (baseX + width));
+  const spanY = Math.max(0, wa.bottom - (baseY + height));
+  const run = Math.max(0, Math.min(Math.floor(spanX / CASCADE_STEP), Math.floor(spanY / CASCADE_STEP)));
+
+  let x: number;
+  let y: number;
+  if (run === 0) {
+    // Viewport too small to cascade — fan out a little so they aren't pixel-identical.
+    const n = index % 5;
+    x = baseX + n * 10;
+    y = baseY + n * 10;
+  } else {
+    const cycle = index % (run + 1);
+    const lane = Math.floor(index / (run + 1));
+    // Each fresh run after a reset is nudged sideways so many windows don't
+    // all land on the same pixel column.
+    x = baseX + cycle * CASCADE_STEP + lane * 18;
+    y = baseY + cycle * CASCADE_STEP;
+  }
+  x = clamp(x, wa.left, Math.max(wa.left, wa.right - width));
+  y = clamp(y, wa.top, Math.max(wa.top, wa.bottom - height));
+  return { x, y, width, height };
+}
+
+/** Keep a window reachable: titlebar never hidden under the menubar or dock,
+ *  and always at least MIN_TITLE_VISIBLE px on-screen horizontally. */
+function clampToView(x: number, y: number, width: number, vw: number, vh: number) {
+  const minX = MIN_TITLE_VISIBLE - width; // most of the window may sit off the left edge…
+  const maxX = vw - MIN_TITLE_VISIBLE;     // …as long as a grabbable strip stays on the right
+  const minY = MENUBAR_H;
+  const maxY = vh - DOCK_RESERVED - MIN_TITLE_VISIBLE;
+  return {
+    x: clamp(x, minX, Math.max(minX, maxX)),
+    y: clamp(y, minY, Math.max(minY, maxY)),
+  };
 }
 
 export const useOS = create<OSState>()(
@@ -509,13 +593,15 @@ export const useOS = create<OSState>()(
 
         const count = state.windows.length;
         const size = meta.defaultSize ?? { width: 720, height: 480 };
+        const { vw, vh } = viewportSize();
+        const placed = cascadePlacement(count, size, vw, vh);
         const win: WindowState = {
           id: newId(),
           appId: targetAppId,
-          x: 80 + (count % 6) * 30,
-          y: MENUBAR_H + 24 + (count % 6) * 28,
-          width: size.width,
-          height: size.height,
+          x: placed.x,
+          y: placed.y,
+          width: placed.width,
+          height: placed.height,
           z,
           minimized: false,
           maximized: false,
@@ -547,11 +633,37 @@ export const useOS = create<OSState>()(
         }),
 
       moveWindow: (id, x, y) =>
-        set((s) => ({
-          windows: s.windows.map((w) =>
-            w.id === id ? { ...w, x: Math.max(0, x), y: clamp(y, MENUBAR_H, 100000) } : w
-          ),
-        })),
+        set((s) => {
+          const { vw, vh } = viewportSize();
+          return {
+            windows: s.windows.map((w) =>
+              w.id === id ? { ...w, ...clampToView(x, y, w.width, vw, vh) } : w
+            ),
+          };
+        }),
+
+      // Re-fit windows after a viewport resize: maximized/snapped windows
+      // recompute their bounds, free windows shrink to fit and snap back into
+      // view if they ended up off-screen.
+      reflowViewport: () =>
+        set((s) => {
+          if (typeof window === "undefined") return {};
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          return {
+            windows: s.windows.map((w) => {
+              if (w.maximized) {
+                return { ...w, x: 0, y: MENUBAR_H, width: vw, height: vh - MENUBAR_H - DOCK_RESERVED };
+              }
+              if (w.snap) {
+                return { ...w, ...boundsForZone(w.snap, vw, vh) };
+              }
+              const { width, height } = fitSize(w.width, w.height, vw, vh);
+              const { x, y } = clampToView(w.x, w.y, width, vw, vh);
+              return { ...w, x, y, width, height };
+            }),
+          };
+        }),
 
       resizeWindow: (id, width, height) =>
         set((s) => ({
