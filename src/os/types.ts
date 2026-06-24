@@ -95,7 +95,9 @@ export interface WindowState {
 }
 
 export const MENUBAR_H = 30;
-export const DOCK_RESERVED = 76;
+// Height reserved for the bottom taskbar (the dock renders as a full-width
+// ~32px Win98 taskbar), so maximized/snapped windows sit flush above it.
+export const DOCK_RESERVED = 40;
 
 export interface MenuItem {
   label?: string;

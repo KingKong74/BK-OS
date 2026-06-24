@@ -46,7 +46,7 @@
 [data-scene="win98-dark"] {
   --wallpaper: #1a1a2e;
   --surface: #2a2a32;
-  --surface-2: #2a2a32;
+  --surface-2: #23232a; /* slightly deeper than --surface so sidebars/insets/rows read */
   --text: #e8e8ea;
   --text-dim: #9aa0aa;
   --border: #4a4a52;
@@ -2566,3 +2566,47 @@
 }
 [data-scene="win98"] .settings-badge,
 [data-scene="win98-dark"] .settings-badge { border-radius: 0; }
+
+/* ============================================================
+   General polish — dark scrollbars, dark focus rings, subtle hovers
+   ============================================================ */
+
+/* Chunky beveled scrollbars for the night theme (mirrors the day rules) */
+[data-scene="win98-dark"] ::-webkit-scrollbar { width: 16px; height: 16px; }
+[data-scene="win98-dark"] ::-webkit-scrollbar-track {
+  background:
+    linear-gradient(45deg, #26262e 25%, transparent 25%) 0 0 / 2px 2px,
+    linear-gradient(-45deg, #26262e 25%, transparent 25%) 0 0 / 2px 2px,
+    #2a2a32;
+}
+[data-scene="win98-dark"] ::-webkit-scrollbar-thumb {
+  background: #2a2a32;
+  border: none;
+  box-shadow:
+    inset -1px -1px #050508,
+    inset 1px 1px #4a4a52,
+    inset -2px -2px #1a1a22,
+    inset 2px 2px #3a3a44;
+}
+[data-scene="win98-dark"] ::-webkit-scrollbar-corner { background: #2a2a32; }
+
+/* Classic dotted focus rectangle for the night theme too */
+[data-scene="win98-dark"] button:focus-visible,
+[data-scene="win98-dark"] input:focus-visible,
+[data-scene="win98-dark"] select:focus-visible,
+[data-scene="win98-dark"] [role="button"]:focus-visible {
+  outline: 1px dotted #e8e8ea;
+  outline-offset: -3px;
+}
+
+/* Subtle, present hover on taskbar tiles (both dock styles) */
+[data-dock="win98"] .dock-app:hover .dock-tile { background: #cacaca; }
+[data-dock="win98-dark"] .dock-app:hover .dock-tile { background: #33333c; }
+[data-dock="win98"] .dock-taskview:hover,
+[data-dock="win98-dark"] .dock-taskview:hover { filter: brightness(1.04); }
+
+/* Dark: the file-list pane reads as white in the day theme — give it the
+   deeper window-body tone at night so it looks like a sunken content field
+   rather than the same flat grey as the surrounding chrome. */
+[data-scene="win98-dark"] .exp-pane { background: #1f1f26; }
+[data-scene="win98-dark"] .help-content code { background: #1f1f26; color: #e8e8ea; box-shadow: inset 1px 1px #1a1a22, inset -1px -1px #4a4a52; }
