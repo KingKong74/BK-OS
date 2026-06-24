@@ -7,6 +7,7 @@ import { renderApp } from "@/os/registry";
 import { zoneFromPoint } from "@/os/snap";
 import { MENUBAR_H, type SnapZone, type WindowState } from "@/os/types";
 import { Icon } from "./Icon";
+import { AppIcon } from "./AppIcon";
 
 export function WindowFrame({ win }: { win: WindowState }) {
   const meta = APP_MAP[win.appId];
@@ -167,7 +168,10 @@ export function WindowFrame({ win }: { win: WindowState }) {
         }}
       >
         <span className="window-title">
-          {meta && <Icon name={meta.icon} size={14} />}
+          {/* App icon derives from the same manifest source as the dock /
+              launcher / desktop (AppIcon), so it's consistent everywhere.
+              Slightly smaller when maximised, larger when restored. */}
+          {meta && <AppIcon id={win.appId} size={win.maximized ? 13 : 15} />}
           {meta?.name}
         </span>
         <span className="window-controls">

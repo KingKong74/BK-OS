@@ -135,7 +135,7 @@ export function Dock() {
                     ]);
                   }}
                 >
-                  {meta && <AppIcon id={w.appId} size={15} />}
+                  {meta && <AppIcon id={w.appId} size={14} />}
                   <span className="dock-task-label">{meta?.name}</span>
                 </button>
               );
