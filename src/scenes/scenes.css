@@ -3047,3 +3047,46 @@
 }
 .launcher[data-launcher="modern"] .launcher-power-pop button { color: #e8ebf2; border-radius: 5px; }
 .launcher[data-launcher="modern"] .launcher-power-pop button:hover { background: rgba(77, 159, 255, 0.32); }
+
+/* ============================================================
+   Flush pinned dock icons (all four styles). No beveled box — just the
+   icon in a larger click target, with an accent-tinted hover/active
+   highlight and a running indicator (the underline) as the primary cue.
+   Appended last so it wins over the per-style tile rules by source order.
+   ============================================================ */
+[data-dock] .dock-app { border-radius: 6px; }
+[data-dock] .dock-tile { background: transparent; box-shadow: none; border-radius: 6px; }
+
+/* Accent-tinted hover / active highlight per style */
+[data-dock="win98"] .dock-app:hover .dock-tile { background: rgba(0, 0, 128, 0.12); box-shadow: none; }
+[data-dock="win98"] .dock-app:active .dock-tile,
+[data-dock="win98"] .dock-app.is-active .dock-tile { background: rgba(0, 0, 128, 0.20); box-shadow: none; }
+[data-dock="win98-dark"] .dock-app:hover .dock-tile { background: rgba(120, 150, 220, 0.18); box-shadow: none; }
+[data-dock="win98-dark"] .dock-app:active .dock-tile,
+[data-dock="win98-dark"] .dock-app.is-active .dock-tile { background: rgba(120, 150, 220, 0.28); box-shadow: none; }
+[data-dock="midnight"] .dock-app:hover .dock-tile { background: rgba(77, 159, 255, 0.16); box-shadow: none; }
+[data-dock="midnight"] .dock-app:active .dock-tile,
+[data-dock="midnight"] .dock-app.is-active .dock-tile { background: rgba(77, 159, 255, 0.26); box-shadow: none; }
+[data-dock="centered"] .dock-app:active .dock-tile,
+[data-dock="centered"] .dock-app.is-active .dock-tile { background: rgba(255, 255, 255, 0.16); box-shadow: none; }
+
+/* Running indicator — underline beneath pinned apps with an open window.
+   Wider when that app is the focused one. Overrides the win98 hide rule. */
+[data-dock] .dock-app.is-running::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  transform: translateX(-50%);
+  width: 13px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--dock-run, #4d9fff);
+  transition: width 0.14s ease, background 0.14s ease;
+  display: block;
+}
+[data-dock] .dock-app.is-running.is-active::after { width: 19px; }
+[data-dock="win98"] .dock-app.is-running::after { background: #000080; }
+[data-dock="win98-dark"] .dock-app.is-running::after { background: #6da0e0; }
+[data-dock="midnight"] .dock-app.is-running::after { background: #4d9fff; box-shadow: 0 0 5px rgba(77,159,255,0.6); }
+[data-dock="centered"] .dock-app.is-running::after { background: #4d9fff; box-shadow: 0 0 5px rgba(77,159,255,0.6); }

@@ -88,11 +88,13 @@ export function Dock() {
         {pinnedApps.map((id) => {
           const meta = APP_MAP[id];
           if (!meta) return null;
+          const isRunning = windows.some((w) => w.appId === id);
+          const isActive = windows.some((w) => w.id === focusedId && w.appId === id && !w.minimized);
           return (
             <button
               key={id}
               data-pin={id}
-              className="dock-app"
+              className={"dock-app" + (isRunning ? " is-running" : "") + (isActive ? " is-active" : "")}
               aria-label={meta.name}
               title={meta.name}
               onPointerDown={(e) => onPinDown(e, id)}
