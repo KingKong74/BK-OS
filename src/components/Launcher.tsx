@@ -29,6 +29,7 @@ const CATEGORY_LABELS: Record<AppCategory, string> = {
 
 export function Launcher() {
   const openApp = useOS((s) => s.openApp);
+  const launcherStyle = useOS((s) => s.launcherStyle);
   const toggleLauncher = useOS((s) => s.toggleLauncher);
   const addDesktopShortcut = useOS((s) => s.addDesktopShortcut);
   const setVaultInitialPath = useOS((s) => s.setVaultInitialPath);
@@ -160,11 +161,13 @@ export function Launcher() {
   return (
     <div
       className={"launcher-overlay" + (ghost ? " is-dragging" : "")}
+      data-launcher={launcherStyle}
       onClick={ghost ? undefined : close}
     >
       <div
         ref={launcherRef}
         className={"launcher" + (ghost ? " is-ghost-active" : "")}
+        data-launcher={launcherStyle}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="launcher-main">

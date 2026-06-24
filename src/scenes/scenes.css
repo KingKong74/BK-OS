@@ -2985,3 +2985,65 @@
 [data-dock="centered"] .tray-btn { color: #c8d2e6; }
 [data-dock="centered"] .tray-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
 [data-dock="centered"] .tray-clock { color: #dbe3f2; font-family: ui-monospace, "Cascadia Code", "Consolas", monospace; font-size: 11px; }
+
+/* ============================================================
+   Modern (Win11-style) Start menu — centered, frosted dark panel that
+   rises from the dock. Selected via launcherStyle; the classic style keeps
+   the existing scene-based bottom-left menu. Works over any OS theme.
+   ============================================================ */
+.launcher-overlay[data-launcher="modern"] {
+  align-items: flex-end;
+  justify-content: center;
+  background: transparent;
+  padding: 0 0 48px;
+}
+.launcher[data-launcher="modern"] {
+  width: 640px;
+  max-width: calc(100vw - 24px);
+  max-height: min(540px, calc(100vh - 96px));
+  border-radius: 12px;
+  border: 0;
+  background: rgba(20, 20, 30, 0.85);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 0 1px rgba(120, 150, 220, 0.18), 0 18px 55px rgba(0, 0, 0, 0.55);
+  color: #e8ebf2;
+  animation: launcher-rise 0.16s ease-out;
+}
+@keyframes launcher-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.launcher[data-launcher="modern"] .launcher-main { padding: 18px 22px 12px; gap: 14px; }
+.launcher[data-launcher="modern"] .launcher-content { overflow-y: auto; }
+.launcher[data-launcher="modern"] .launcher-search {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: #c8d2e6;
+  box-shadow: none;
+}
+.launcher[data-launcher="modern"] .launcher-search input { color: #e8ebf2; }
+.launcher[data-launcher="modern"] .launcher-search input::placeholder { color: #8a93a6; }
+.launcher[data-launcher="modern"] .launcher-section-label { color: #aab4cc; }
+.launcher[data-launcher="modern"] .launcher-section-count { background: rgba(255,255,255,0.12); color: #cdd6e8; border: 0; }
+.launcher[data-launcher="modern"] .launcher-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.launcher[data-launcher="modern"] .launcher-app { border-radius: 10px; height: 88px; color: #e8ebf2; }
+.launcher[data-launcher="modern"] .launcher-name { color: #c8d2e6; }
+.launcher[data-launcher="modern"] .launcher-app:hover { background: rgba(255, 255, 255, 0.10); color: #fff; }
+.launcher[data-launcher="modern"] .launcher-app:hover .launcher-name { color: #fff; }
+.launcher[data-launcher="modern"] .launcher-search-row { color: #dbe3f2; border-radius: 7px; }
+.launcher[data-launcher="modern"] .launcher-search-row:hover { background: rgba(77, 159, 255, 0.28); color: #fff; }
+.launcher[data-launcher="modern"] .launcher-search-row:hover .launcher-search-row-kind { color: #fff; }
+.launcher[data-launcher="modern"] .launcher-empty-title { color: #e8ebf2; }
+.launcher[data-launcher="modern"] .launcher-footer { border-top: 1px solid rgba(255, 255, 255, 0.10); box-shadow: none; }
+.launcher[data-launcher="modern"] .launcher-power-wrapper { order: 5; margin-left: auto; }
+.launcher[data-launcher="modern"] .launcher-fb { color: #c8d2e6; border-radius: 8px; }
+.launcher[data-launcher="modern"] .launcher-fb:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.launcher[data-launcher="modern"] .launcher-fb.is-active { background: rgba(77, 159, 255, 0.3); color: #fff; }
+.launcher[data-launcher="modern"] .launcher-power-pop {
+  background: rgba(30, 32, 44, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #e8ebf2;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.launcher[data-launcher="modern"] .launcher-power-pop button { color: #e8ebf2; border-radius: 5px; }
+.launcher[data-launcher="modern"] .launcher-power-pop button:hover { background: rgba(77, 159, 255, 0.32); }
