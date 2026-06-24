@@ -4,8 +4,15 @@ export type ThemeId = "win98" | "win98-dark";
 export type SceneId = ThemeId;
 
 // The taskbar can be styled independently of the OS theme. "midnight" is the
-// dramatic near-black look that pairs well with either light or dark chrome.
-export type DockStyleId = "win98" | "win98-dark" | "midnight";
+// dramatic near-black look; "centered" is the Win11-style bar with the pinned
+// + running icons clustered in the middle. Both pair with light or dark chrome.
+export type DockStyleId = "win98" | "win98-dark" | "midnight" | "centered";
+
+// Start menu / launcher presentation.
+export type LauncherStyle = "classic" | "modern";
+
+// Explorer icon density / layout.
+export type ExplorerView = "small" | "large" | "details";
 
 export type IconName =
   | "lock"

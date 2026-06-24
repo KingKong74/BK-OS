@@ -40,7 +40,7 @@ export const APPS: AppManifest[] = [
   {
     id: "settings", name: "Settings", icon: "settings",
     accent: "#F1EFE8", accentFg: "#2C2C2A", pinned: true,
-    defaultSize: { width: 560, height: 460 },
+    defaultSize: { width: 680, height: 520 },
     origin: "builtin", visibility: "both", category: "system",
     description: "Theme, accessibility, and BK-OS preferences.",
     commands: [

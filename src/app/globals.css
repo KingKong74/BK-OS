@@ -1767,3 +1767,136 @@ input:focus-visible,
   color: var(--text-dim);
   margin-top: 2px;
 }
+
+/* ============================================================
+   Settings 2.0 — Win98 window outside, macOS-style settings inside.
+   Sidebar rail + content pane, scoped light/dark vars so the modern
+   look reads in both themes.
+   ============================================================ */
+.settings2 {
+  --s2bg: #f4f5f7;
+  --s2pane: #ffffff;
+  --s2card: #ffffff;
+  --s2border: #e3e6ea;
+  --s2text: #1b1d22;
+  --s2dim: #6b7280;
+  --s2accent: #2f6fd6;
+  --s2hover: #eef1f5;
+  display: flex;
+  height: 100%;
+  background: var(--s2pane);
+  color: var(--s2text);
+  font-size: 13px;
+}
+[data-scene="win98-dark"] .settings2 {
+  --s2bg: #1c1f27;
+  --s2pane: #21242d;
+  --s2card: #272b35;
+  --s2border: #343a47;
+  --s2text: #e8ebf2;
+  --s2dim: #8a93a6;
+  --s2accent: #5b9bf0;
+  --s2hover: #2c313c;
+}
+.settings2-rail {
+  width: 180px;
+  flex: 0 0 auto;
+  background: var(--s2bg);
+  border-right: 1px solid var(--s2border);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.settings2-navitem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border: 0;
+  background: transparent;
+  color: var(--s2text);
+  cursor: pointer;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+.settings2-navitem:hover { background: var(--s2hover); }
+.settings2-navitem.is-active { background: var(--s2accent); color: #fff; }
+.settings2-navitem.is-active svg { color: #fff; }
+
+.settings2-pane { flex: 1; min-width: 0; overflow-y: auto; padding: 22px 26px 28px; }
+.settings2-h { font-size: 17px; font-weight: 700; margin: 0 0 3px; color: var(--s2text); }
+.settings2-h:not(:first-child) { margin-top: 28px; }
+.settings2-sub { color: var(--s2dim); font-size: 13px; margin: 0 0 16px; line-height: 1.4; }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 12px; }
+.select-card {
+  position: relative;
+  text-align: left;
+  border: 1px solid var(--s2border);
+  background: var(--s2card);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--s2text);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+.select-card:hover { border-color: var(--s2accent); }
+.select-card.is-active { border-color: var(--s2accent); box-shadow: 0 0 0 1.5px var(--s2accent); }
+.card-check {
+  position: absolute;
+  top: 7px; right: 7px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--s2accent);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.card-swatch { position: relative; height: 64px; border-radius: 7px; overflow: hidden; display: block; border: 1px solid var(--s2border); }
+.card-name { font-weight: 600; font-size: 13px; }
+.card-blurb { font-size: 11.5px; color: var(--s2dim); line-height: 1.35; }
+
+/* Wallpaper swatches (modern) */
+.settings2 .wp-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+.settings2 .wp-swatch { border: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 0; color: var(--s2text); }
+.settings2 .wp-chip { position: relative; width: 58px; height: 42px; border-radius: 8px; border: 1px solid var(--s2border); display: block; }
+.settings2 .wp-swatch.is-active .wp-chip { box-shadow: 0 0 0 2px var(--s2accent); border-color: var(--s2accent); }
+.settings2 .wp-chip .card-check { top: -6px; right: -6px; width: 16px; height: 16px; }
+.settings2 .wp-name { font-size: 11.5px; color: var(--s2dim); }
+.settings2 .wp-swatch.is-active .wp-name { color: var(--s2text); font-weight: 600; }
+
+/* Rows + controls */
+.settings2-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 13px 0; border-bottom: 1px solid var(--s2border); max-width: 540px; }
+.settings2-row:last-child { border-bottom: 0; }
+.settings2-row-title { display: block; font-weight: 600; font-size: 13.5px; }
+.settings2-row-desc { display: block; color: var(--s2dim); font-size: 12px; margin-top: 2px; line-height: 1.4; }
+.settings2-btn { font: inherit; font-size: 12px; padding: 6px 13px; border: 1px solid var(--s2border); background: var(--s2card); color: var(--s2text); border-radius: 7px; cursor: pointer; flex: 0 0 auto; }
+.settings2-btn:hover { border-color: var(--s2accent); }
+.settings2-link { margin-top: 12px; border: 0; background: transparent; color: var(--s2accent); cursor: pointer; font: inherit; font-size: 12.5px; text-decoration: underline; padding: 0; }
+
+/* iOS-style pill toggle inside settings — override the win98 square toggle */
+.settings2 .toggle { border-radius: 13px; box-shadow: none; background: var(--s2border); }
+.settings2 .toggle.is-on { background: var(--s2accent); }
+.settings2 .toggle-knob { border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.settings2 .settings-select { background: var(--s2card); color: var(--s2text); border: 1px solid var(--s2border); border-radius: 6px; box-shadow: none; }
+.settings2 .settings-badge { background: var(--s2hover); color: var(--s2dim); border-color: var(--s2border); border-radius: 9px; }
+.settings2 .settings-about { display: flex; flex-direction: column; gap: 5px; max-width: 460px; }
+.settings2 .settings-about > div { display: flex; gap: 10px; font-size: 13px; }
+.settings2 .settings-about dt { width: 90px; flex: 0 0 auto; color: var(--s2dim); }
+.settings2 .settings-about dd { margin: 0; color: var(--s2text); }
+.settings2 kbd { background: var(--s2hover); border: 1px solid var(--s2border); border-radius: 4px; padding: 1px 5px; font-size: 11px; }
+
+.settings2-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 36px 16px; color: var(--s2dim); }
+.settings2-empty-title { font-size: 13px; font-weight: 700; color: var(--s2text); }
+.settings2-empty-sub { font-size: 12px; max-width: 320px; line-height: 1.45; }

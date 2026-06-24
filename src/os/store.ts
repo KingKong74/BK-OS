@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { APP_MAP, APPS } from "./appsMeta";
 import { boundsForZone } from "./snap";
-import { MENUBAR_H, DOCK_RESERVED, type DockStyleId, type MenuItem, type MenuState, type SceneId, type SnapZone, type WindowState } from "./types";
+import { MENUBAR_H, DOCK_RESERVED, type DockStyleId, type ExplorerView, type LauncherStyle, type MenuItem, type MenuState, type SceneId, type SnapZone, type WindowState } from "./types";
 import type { FsNode } from "./vfs";
 
 export type NoteColor = "yellow" | "pink" | "blue" | "green" | "orange";
@@ -96,6 +96,9 @@ if (typeof window !== "undefined") {
 interface OSState {
   scene: SceneId;
   dockStyle: DockStyleId;
+  dockMatchesTheme: boolean;     // when true, switching theme auto-syncs the dock
+  launcherStyle: LauncherStyle;  // classic Win98 start menu vs modern Win11 panel
+  explorerView: ExplorerView;    // small / large icons / details (global default)
   wallpaperColor: string | null; // null = follow the theme's default wallpaper
   soundEffects: boolean;         // stub — UI only for now
   windows: WindowState[];
@@ -127,6 +130,9 @@ interface OSState {
 
   setScene: (scene: SceneId) => void;
   setDockStyle: (style: DockStyleId) => void;
+  setDockMatchesTheme: (on: boolean) => void;
+  setLauncherStyle: (style: LauncherStyle) => void;
+  setExplorerView: (view: ExplorerView) => void;
   setWallpaperColor: (color: string | null) => void;
   setSoundEffects: (on: boolean) => void;
   toggleLauncher: (open?: boolean) => void;
@@ -188,6 +194,13 @@ interface OSState {
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
+}
+
+// Natural taskbar pairing for a theme when "Match taskbar to theme" is on.
+// Dark theme mirrors to the literal Win98-at-night dock (not the dramatic
+// midnight one) so the auto-match is a predictable mirror, not a surprise.
+function themeToDock(scene: SceneId): DockStyleId {
+  return scene === "win98-dark" ? "win98-dark" : "win98";
 }
 
 // ─── Window placement (Win98-style cascade + on-screen clamping) ───
@@ -278,6 +291,9 @@ export const useOS = create<OSState>()(
     (set, get) => ({
       scene: "win98",
       dockStyle: "win98", // defaults to the theme; selectable independently in Settings
+      dockMatchesTheme: true,
+      launcherStyle: "classic",
+      explorerView: "large",
       wallpaperColor: null,
       soundEffects: false,
       windows: [],
@@ -315,8 +331,14 @@ export const useOS = create<OSState>()(
       shutdownPhase: "off",
       commandPaletteOpen: false,
 
-      setScene: (scene) => set({ scene }),
-      setDockStyle: (style) => set({ dockStyle: style }),
+      setScene: (scene) =>
+        set((s) => (s.dockMatchesTheme ? { scene, dockStyle: themeToDock(scene) } : { scene })),
+      // A manual dock pick turns auto-match off so we never override the user.
+      setDockStyle: (style) => set({ dockStyle: style, dockMatchesTheme: false }),
+      setDockMatchesTheme: (on) =>
+        set((s) => (on ? { dockMatchesTheme: true, dockStyle: themeToDock(s.scene) } : { dockMatchesTheme: false })),
+      setLauncherStyle: (style) => set({ launcherStyle: style }),
+      setExplorerView: (view) => set({ explorerView: view }),
       setWallpaperColor: (color) => set({ wallpaperColor: color }),
       setSoundEffects: (on) => set({ soundEffects: on }),
       toggleLauncher: (open) =>
@@ -775,6 +797,9 @@ export const useOS = create<OSState>()(
       partialize: (s) => ({
         scene: s.scene,
         dockStyle: s.dockStyle,
+        dockMatchesTheme: s.dockMatchesTheme,
+        launcherStyle: s.launcherStyle,
+        explorerView: s.explorerView,
         wallpaperColor: s.wallpaperColor,
         soundEffects: s.soundEffects,
         windows: s.windows,

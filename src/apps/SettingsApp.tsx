@@ -1,46 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { useOS } from "@/os/store";
-import type { ThemeId, DockStyleId } from "@/os/types";
+import { Icon } from "@/components/Icon";
+import type { ThemeId, DockStyleId, LauncherStyle, IconName } from "@/os/types";
 
 const THEMES: { id: ThemeId; name: string; blurb: string; swatch: { bg: string; window: string; title: string } }[] = [
-  {
-    id: "win98",
-    name: "Retro 98",
-    blurb: "Bright teal desktop, silver chrome, classic Win98 bevels.",
-    swatch: { bg: "#008080", window: "#c0c0c0", title: "#000080" },
-  },
-  {
-    id: "win98-dark",
-    name: "Win98 at Night",
-    blurb: "Same shapes, lights off. Easy on the eyes after dark.",
-    swatch: { bg: "#1a1a2e", window: "#2a2a32", title: "#1a3a6a" },
-  },
+  { id: "win98", name: "Retro 98", blurb: "Bright teal desktop, silver chrome.", swatch: { bg: "#008080", window: "#c0c0c0", title: "#000080" } },
+  { id: "win98-dark", name: "Win98 at Night", blurb: "Same shapes, lights off.", swatch: { bg: "#1a1a2e", window: "#2a2a32", title: "#1a3a6a" } },
 ];
 
-// Taskbar styles mirror the theme cards but only re-skin the dock.
-const DOCKS: { id: DockStyleId; name: string; blurb: string; bar: string; bevelLight: string; bevelDark: string; start: string; startFg: string; glow?: string }[] = [
-  {
-    id: "win98",
-    name: "Silver",
-    blurb: "The classic grey taskbar with raised bevels.",
-    bar: "#c0c0c0", bevelLight: "#ffffff", bevelDark: "#808080", start: "#c0c0c0", startFg: "#000",
-  },
-  {
-    id: "win98-dark",
-    name: "Win98 at Night",
-    blurb: "A dark taskbar — pairs with either OS theme.",
-    bar: "#2a2a32", bevelLight: "#4a4a52", bevelDark: "#1a1a22", start: "#2a2a32", startFg: "#e8e8ea",
-  },
-  {
-    id: "midnight",
-    name: "Midnight",
-    blurb: "Near-black with an electric-blue glow. The slick one.",
-    bar: "#0a0a14", bevelLight: "#3d5a9a", bevelDark: "#050510", start: "#16213e", startFg: "#6db3ff", glow: "#4d9fff",
-  },
+const DOCKS: { id: DockStyleId; name: string; blurb: string; bar: string; light: string; dark: string; start: string; startFg: string; glow?: string; centered?: boolean }[] = [
+  { id: "win98", name: "Silver", blurb: "Classic grey taskbar, icons left.", bar: "#c0c0c0", light: "#ffffff", dark: "#808080", start: "#c0c0c0", startFg: "#000" },
+  { id: "win98-dark", name: "Win98 at Night", blurb: "Dark bevels, icons left.", bar: "#2a2a32", light: "#4a4a52", dark: "#1a1a22", start: "#2a2a32", startFg: "#e8e8ea" },
+  { id: "midnight", name: "Midnight", blurb: "Near-black with a blue glow.", bar: "#0a0a14", light: "#3d5a9a", dark: "#050510", start: "#16213e", startFg: "#6db3ff", glow: "#4d9fff" },
+  { id: "centered", name: "Centered", blurb: "Win11-style — icons in the middle.", bar: "#14161f", light: "#2a3550", dark: "#08080e", start: "#1c2950", startFg: "#7fc0ff", glow: "#4d9fff", centered: true },
 ];
 
-// Period-appropriate desktop colours.
+const LAUNCHERS: { id: LauncherStyle; name: string; blurb: string }[] = [
+  { id: "classic", name: "Classic", blurb: "Win98 start menu, bottom-left column." },
+  { id: "modern", name: "Modern", blurb: "Win11-style centered frosted panel." },
+];
+
 const WALLPAPERS: { id: string; name: string; color: string }[] = [
   { id: "teal", name: "Teal", color: "#008080" },
   { id: "navy", name: "Navy", color: "#1a3a6a" },
@@ -50,144 +31,238 @@ const WALLPAPERS: { id: string; name: string; color: string }[] = [
   { id: "charcoal", name: "Charcoal", color: "#2b2b30" },
 ];
 
+type Cat = "appearance" | "taskbar" | "desktop" | "apps" | "sound" | "about";
+const CATEGORIES: { id: Cat; label: string; icon: IconName }[] = [
+  { id: "appearance", label: "Appearance", icon: "sun" },
+  { id: "taskbar", label: "Taskbar", icon: "list" },
+  { id: "desktop", label: "Desktop", icon: "grid" },
+  { id: "apps", label: "Apps", icon: "folder" },
+  { id: "sound", label: "Sound & Cursor", icon: "music" },
+  { id: "about", label: "About BK-OS", icon: "shield" },
+];
+
+function Check() {
+  return <span className="card-check" aria-hidden="true">✓</span>;
+}
+
 export function SettingsApp() {
+  const [cat, setCat] = useState<Cat>("appearance");
   const scene = useOS((s) => s.scene);
   const setScene = useOS((s) => s.setScene);
   const dockStyle = useOS((s) => s.dockStyle);
   const setDockStyle = useOS((s) => s.setDockStyle);
+  const dockMatchesTheme = useOS((s) => s.dockMatchesTheme);
+  const setDockMatchesTheme = useOS((s) => s.setDockMatchesTheme);
+  const launcherStyle = useOS((s) => s.launcherStyle);
+  const setLauncherStyle = useOS((s) => s.setLauncherStyle);
   const wallpaperColor = useOS((s) => s.wallpaperColor);
   const setWallpaperColor = useOS((s) => s.setWallpaperColor);
   const gridSnap = useOS((s) => s.gridSnap);
   const setGridSnap = useOS((s) => s.setGridSnap);
   const soundEffects = useOS((s) => s.soundEffects);
   const setSoundEffects = useOS((s) => s.setSoundEffects);
+  const resetIconPositions = useOS((s) => s.resetIconPositions);
 
   const hostname = typeof window !== "undefined" ? window.location.hostname : "bkos";
 
   return (
-    <div className="settings-app">
-      <h2>Theme</h2>
-      <p className="settings-sub">Pick a theme. The OS re-skins instantly.</p>
-      <div className="scene-grid">
-        {THEMES.map((th) => (
+    <div className="settings2">
+      <nav className="settings2-rail">
+        {CATEGORIES.map((c) => (
           <button
-            key={th.id}
-            className={"scene-card" + (scene === th.id ? " is-active" : "")}
-            onClick={() => setScene(th.id)}
+            key={c.id}
+            className={"settings2-navitem" + (cat === c.id ? " is-active" : "")}
+            onClick={() => setCat(c.id)}
           >
-            <span className="scene-swatch" aria-hidden="true" style={{ background: th.swatch.bg, height: 56 }}>
-              <span className="swatch-bar" style={{ left: 4, top: 4, width: 72, height: 12, background: th.swatch.title, position: "absolute", display: "block" }} />
-              <span className="swatch-win" style={{ left: 4, top: 20, width: 72, height: 28, background: th.swatch.window, position: "absolute", display: "block" }} />
-            </span>
-            <span className="scene-name">{th.name}</span>
-            <span className="scene-blurb">{th.blurb}</span>
+            <Icon name={c.icon} size={15} />
+            <span>{c.label}</span>
           </button>
         ))}
-      </div>
+      </nav>
 
-      <h2 style={{ marginTop: 26 }}>Taskbar style</h2>
-      <p className="settings-sub">Skin the taskbar separately from the OS theme.</p>
-      <div className="scene-grid">
-        {DOCKS.map((dk) => (
-          <button
-            key={dk.id}
-            className={"scene-card" + (dockStyle === dk.id ? " is-active" : "")}
-            onClick={() => setDockStyle(dk.id)}
-          >
-            <span className="scene-swatch" aria-hidden="true" style={{ background: scene === "win98-dark" ? "#1a1a2e" : "#008080", height: 56, padding: 0 }}>
-              <span
-                style={{
-                  position: "absolute", left: 0, right: 0, bottom: 0, height: 18,
-                  background: dk.bar,
-                  boxShadow: `inset 0 1px ${dk.bevelLight}, inset 0 -1px ${dk.bevelDark}`,
-                  display: "flex", alignItems: "center", gap: 3, padding: "0 3px",
-                }}
-              >
-                <span style={{ width: 16, height: 12, background: dk.start, color: dk.startFg, boxShadow: dk.glow ? `inset 0 0 0 1px ${dk.glow}, 0 0 5px ${dk.glow}` : `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
-                <span style={{ width: 10, height: 12, background: dk.bar, boxShadow: dk.glow ? `inset 0 0 0 1px ${dk.bevelLight}` : `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
-                <span style={{ width: 10, height: 12, background: dk.bar, boxShadow: dk.glow ? `inset 0 0 0 1px ${dk.bevelLight}` : `inset -1px -1px ${dk.bevelDark}, inset 1px 1px ${dk.bevelLight}` }} />
+      <div className="settings2-pane">
+        {cat === "appearance" && (
+          <>
+            <h2 className="settings2-h">Theme</h2>
+            <p className="settings2-sub">Pick a theme. The OS re-skins instantly.</p>
+            <div className="card-grid">
+              {THEMES.map((th) => (
+                <button key={th.id} className={"select-card" + (scene === th.id ? " is-active" : "")} onClick={() => setScene(th.id)}>
+                  {scene === th.id && <Check />}
+                  <span className="card-swatch" style={{ background: th.swatch.bg }}>
+                    <span style={{ position: "absolute", left: 6, top: 6, width: 70, height: 12, background: th.swatch.title }} />
+                    <span style={{ position: "absolute", left: 6, top: 22, width: 70, height: 26, background: th.swatch.window }} />
+                  </span>
+                  <span className="card-name">{th.name}</span>
+                  <span className="card-blurb">{th.blurb}</span>
+                </button>
+              ))}
+            </div>
+
+            <h2 className="settings2-h">Wallpaper colour</h2>
+            <p className="settings2-sub">A flat desktop colour, the way the old OSes did it.</p>
+            <div className="wp-grid">
+              {WALLPAPERS.map((wp) => (
+                <button key={wp.id} className={"wp-swatch" + (wallpaperColor === wp.color ? " is-active" : "")} title={wp.name} onClick={() => setWallpaperColor(wp.color)}>
+                  <span className="wp-chip" style={{ background: wp.color }}>{wallpaperColor === wp.color && <Check />}</span>
+                  <span className="wp-name">{wp.name}</span>
+                </button>
+              ))}
+            </div>
+            {wallpaperColor && <button className="settings2-link" onClick={() => setWallpaperColor(null)}>Reset to theme default</button>}
+          </>
+        )}
+
+        {cat === "taskbar" && (
+          <>
+            <h2 className="settings2-h">Taskbar style</h2>
+            <p className="settings2-sub">Skin the taskbar — independently of the OS theme.</p>
+            <div className="card-grid">
+              {DOCKS.map((dk) => (
+                <button key={dk.id} className={"select-card" + (dockStyle === dk.id ? " is-active" : "")} onClick={() => setDockStyle(dk.id)}>
+                  {dockStyle === dk.id && <Check />}
+                  <span className="card-swatch" style={{ background: scene === "win98-dark" ? "#1a1a2e" : "#008080" }}>
+                    <DockPreview dk={dk} />
+                  </span>
+                  <span className="card-name">{dk.name}</span>
+                  <span className="card-blurb">{dk.blurb}</span>
+                </button>
+              ))}
+            </div>
+
+            <label className="settings2-row">
+              <span>
+                <span className="settings2-row-title">Match taskbar to theme</span>
+                <span className="settings2-row-desc">Switching theme also switches the taskbar to its matching style.</span>
               </span>
-            </span>
-            <span className="scene-name">{dk.name}</span>
-            <span className="scene-blurb">{dk.blurb}</span>
-          </button>
-        ))}
+              <button className={"toggle" + (dockMatchesTheme ? " is-on" : "")} role="switch" aria-checked={dockMatchesTheme} onClick={() => setDockMatchesTheme(!dockMatchesTheme)}>
+                <span className="toggle-knob" />
+              </button>
+            </label>
+
+            <h2 className="settings2-h">Start menu style</h2>
+            <p className="settings2-sub">Classic bottom-left menu, or a modern centered panel.</p>
+            <div className="card-grid">
+              {LAUNCHERS.map((lc) => (
+                <button key={lc.id} className={"select-card" + (launcherStyle === lc.id ? " is-active" : "")} onClick={() => setLauncherStyle(lc.id)}>
+                  {launcherStyle === lc.id && <Check />}
+                  <span className="card-swatch" style={{ background: "#11131c" }}>
+                    <LauncherPreview id={lc.id} />
+                  </span>
+                  <span className="card-name">{lc.name}</span>
+                  <span className="card-blurb">{lc.blurb}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {cat === "desktop" && (
+          <>
+            <h2 className="settings2-h">Desktop</h2>
+            <label className="settings2-row">
+              <span>
+                <span className="settings2-row-title">Align icons to a grid</span>
+                <span className="settings2-row-desc">Keep desktop icons locked to a tidy grid formation.</span>
+              </span>
+              <button className={"toggle" + (gridSnap ? " is-on" : "")} role="switch" aria-checked={gridSnap} onClick={() => setGridSnap(!gridSnap)}>
+                <span className="toggle-knob" />
+              </button>
+            </label>
+            <label className="settings2-row">
+              <span>
+                <span className="settings2-row-title">Icon flow</span>
+                <span className="settings2-row-desc">Tidied icons now flow left-to-right in rows (macOS-style), wrapping at the edge.</span>
+              </span>
+              <button className="settings2-btn" onClick={() => resetIconPositions()}>Tidy icons now</button>
+            </label>
+          </>
+        )}
+
+        {cat === "apps" && (
+          <>
+            <h2 className="settings2-h">Apps</h2>
+            <p className="settings2-sub">Manage pinned shortcuts and default apps.</p>
+            <div className="settings2-empty">
+              <Icon name="folder" size={26} />
+              <p className="settings2-empty-title">Pinned shortcut management</p>
+              <p className="settings2-empty-sub">Coming soon. For now, right-click an app in the Start menu or drag it to the desktop or taskbar.</p>
+            </div>
+          </>
+        )}
+
+        {cat === "sound" && (
+          <>
+            <h2 className="settings2-h">Pointer &amp; sound</h2>
+            <label className="settings2-row">
+              <span>
+                <span className="settings2-row-title">Cursor style <span className="settings-badge">Coming soon</span></span>
+                <span className="settings2-row-desc">Currently using the OS default pointer.</span>
+              </span>
+              <select className="settings-select" value="default" disabled>
+                <option value="default">Default</option>
+              </select>
+            </label>
+            <label className="settings2-row">
+              <span>
+                <span className="settings2-row-title">Sound effects <span className="settings-badge">Coming soon</span></span>
+                <span className="settings2-row-desc">Classic chimes and clicks. Saved for when they&rsquo;re wired up.</span>
+              </span>
+              <button className={"toggle" + (soundEffects ? " is-on" : "")} role="switch" aria-checked={soundEffects} onClick={() => setSoundEffects(!soundEffects)}>
+                <span className="toggle-knob" />
+              </button>
+            </label>
+          </>
+        )}
+
+        {cat === "about" && (
+          <>
+            <h2 className="settings2-h">About BK-OS</h2>
+            <p className="settings2-sub" style={{ marginBottom: 10 }}>Built by Bailey King in Brisbane. Self-hosted on a mini PC under my desk.</p>
+            <dl className="settings-about">
+              <div><dt>Version</dt><dd>BK-OS 0.1</dd></div>
+              <div><dt>Hostname</dt><dd>{hostname}</dd></div>
+              <div><dt>Shell</dt><dd>Next.js · Win98 aesthetic</dd></div>
+            </dl>
+            <p className="settings2-sub" style={{ marginTop: 14 }}>Press <kbd>Ctrl</kbd> + <kbd>K</kbd> anywhere to jump to anything fast.</p>
+          </>
+        )}
       </div>
-
-      <h2 style={{ marginTop: 26 }}>Wallpaper colour</h2>
-      <p className="settings-sub">A flat desktop colour, the way the old OSes did it.</p>
-      <div className="wp-grid">
-        {WALLPAPERS.map((wp) => (
-          <button
-            key={wp.id}
-            className={"wp-swatch" + (wallpaperColor === wp.color ? " is-active" : "")}
-            title={wp.name}
-            onClick={() => setWallpaperColor(wp.color)}
-          >
-            <span className="wp-chip" style={{ background: wp.color }} />
-            <span className="wp-name">{wp.name}</span>
-          </button>
-        ))}
-      </div>
-      {wallpaperColor && (
-        <button className="settings-link" onClick={() => setWallpaperColor(null)}>
-          Reset to theme default
-        </button>
-      )}
-
-      <h2 style={{ marginTop: 26 }}>Desktop</h2>
-      <label className="settings-row">
-        <span>
-          <span className="settings-row-title">Align icons to a grid</span>
-          <span className="settings-row-desc">Keep desktop icons locked to a tidy grid formation.</span>
-        </span>
-        <button
-          className={"toggle" + (gridSnap ? " is-on" : "")}
-          role="switch"
-          aria-checked={gridSnap}
-          onClick={() => setGridSnap(!gridSnap)}
-        >
-          <span className="toggle-knob" />
-        </button>
-      </label>
-
-      <h2 style={{ marginTop: 26 }}>Pointer &amp; sound</h2>
-      <label className="settings-row">
-        <span>
-          <span className="settings-row-title">Cursor style <span className="settings-badge">Coming soon</span></span>
-          <span className="settings-row-desc">Currently using the OS default pointer.</span>
-        </span>
-        <select className="settings-select" value="default" disabled>
-          <option value="default">Default</option>
-        </select>
-      </label>
-      <label className="settings-row">
-        <span>
-          <span className="settings-row-title">Sound effects <span className="settings-badge">Coming soon</span></span>
-          <span className="settings-row-desc">Classic chimes and clicks. Saved for when they&rsquo;re wired up.</span>
-        </span>
-        <button
-          className={"toggle" + (soundEffects ? " is-on" : "")}
-          role="switch"
-          aria-checked={soundEffects}
-          onClick={() => setSoundEffects(!soundEffects)}
-        >
-          <span className="toggle-knob" />
-        </button>
-      </label>
-
-      <h2 style={{ marginTop: 26 }}>About BK-OS</h2>
-      <p className="settings-sub" style={{ marginBottom: 6 }}>
-        Built by Bailey King in Brisbane. Self-hosted on a mini PC under my desk.
-      </p>
-      <dl className="settings-about">
-        <div><dt>Version</dt><dd>BK-OS 0.1</dd></div>
-        <div><dt>Hostname</dt><dd>{hostname}</dd></div>
-        <div><dt>Shell</dt><dd>Next.js · Win98 aesthetic</dd></div>
-      </dl>
-      <p className="settings-sub" style={{ marginTop: 12 }}>
-        Press <kbd>Ctrl</kbd> + <kbd>K</kbd> anywhere to jump to anything fast.
-      </p>
     </div>
+  );
+}
+
+function DockPreview({ dk }: { dk: typeof DOCKS[number] }) {
+  const chip = (extra?: React.CSSProperties) => (
+    <span style={{ width: 11, height: 13, background: dk.glow ? "#1a2340" : dk.bar, boxShadow: dk.glow ? "inset 0 0 0 1px " + dk.light : `inset -1px -1px ${dk.dark}, inset 1px 1px ${dk.light}`, ...extra }} />
+  );
+  const start = (
+    <span style={{ width: 17, height: 13, background: dk.start, color: dk.startFg, boxShadow: dk.glow ? `inset 0 0 0 1px ${dk.glow}, 0 0 5px ${dk.glow}` : `inset -1px -1px ${dk.dark}, inset 1px 1px ${dk.light}` }} />
+  );
+  if (dk.centered) {
+    return (
+      <span style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 20, background: dk.bar, boxShadow: `inset 0 1px ${dk.light}`, display: "flex", alignItems: "center", padding: "0 4px" }}>
+        {start}
+        <span style={{ margin: "0 auto", display: "flex", gap: 3 }}>{chip()}{chip()}{chip()}</span>
+        <span style={{ width: 8, height: 13, background: "#0c0c16" }} />
+      </span>
+    );
+  }
+  return (
+    <span style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 20, background: dk.bar, boxShadow: `inset 0 1px ${dk.light}`, display: "flex", alignItems: "center", gap: 3, padding: "0 4px" }}>
+      {start}{chip()}{chip()}
+      <span style={{ marginLeft: "auto", width: 8, height: 13, background: dk.glow ? "#0c0c16" : dk.bar, boxShadow: dk.glow ? "none" : `inset 1px 1px ${dk.dark}` }} />
+    </span>
+  );
+}
+
+function LauncherPreview({ id }: { id: LauncherStyle }) {
+  if (id === "classic") {
+    return <span style={{ position: "absolute", left: 5, bottom: 4, width: 34, height: 40, background: "#c0c0c0", boxShadow: "inset 1px 1px #fff, inset -1px -1px #404040" }} />;
+  }
+  return (
+    <span style={{ position: "absolute", left: "50%", bottom: 8, transform: "translateX(-50%)", width: 58, height: 38, borderRadius: 6, background: "rgba(40,44,66,0.92)", boxShadow: "0 0 0 1px rgba(120,150,220,0.4), 0 4px 10px rgba(0,0,0,0.4)", display: "flex", flexWrap: "wrap", gap: 3, padding: 5, alignContent: "flex-start" }}>
+      {[0, 1, 2, 3, 4, 5].map((i) => <span key={i} style={{ width: 8, height: 8, borderRadius: 2, background: "#4d9fff66" }} />)}
+    </span>
   );
 }
