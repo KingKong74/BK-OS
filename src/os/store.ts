@@ -95,6 +95,7 @@ if (typeof window !== "undefined") {
 
 interface OSState {
   scene: SceneId;
+  dockStyle: SceneId;
   windows: WindowState[];
   focusedId: string | null;
   zCounter: number;
@@ -123,6 +124,7 @@ interface OSState {
   commandPaletteOpen: boolean;
 
   setScene: (scene: SceneId) => void;
+  setDockStyle: (style: SceneId) => void;
   toggleLauncher: (open?: boolean) => void;
   setSnapPreview: (zone: SnapZone | null) => void;
   openMenu: (x: number, y: number, items: MenuItem[]) => void;
@@ -271,6 +273,7 @@ export const useOS = create<OSState>()(
   persist(
     (set, get) => ({
       scene: "win98",
+      dockStyle: "win98", // defaults to the theme; selectable independently in Settings
       windows: [],
       focusedId: null,
       zCounter: 1,
@@ -307,6 +310,7 @@ export const useOS = create<OSState>()(
       commandPaletteOpen: false,
 
       setScene: (scene) => set({ scene }),
+      setDockStyle: (style) => set({ dockStyle: style }),
       toggleLauncher: (open) =>
         set((s) => ({ launcherOpen: open ?? !s.launcherOpen })),
       setSnapPreview: (zone) => set({ snapPreview: zone }),
@@ -762,6 +766,7 @@ export const useOS = create<OSState>()(
       // server-truthy and cross-device consistent.
       partialize: (s) => ({
         scene: s.scene,
+        dockStyle: s.dockStyle,
         windows: s.windows,
         focusedId: s.focusedId,
         zCounter: s.zCounter,

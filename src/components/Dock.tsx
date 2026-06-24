@@ -11,6 +11,7 @@ import { SystemTray } from "./SystemTray";
 export function Dock() {
   const windows = useOS((s) => s.windows);
   const focusedId = useOS((s) => s.focusedId);
+  const dockStyle = useOS((s) => s.dockStyle);
   const pinnedApps = useOS((s) => s.pinnedApps);
   const openApp = useOS((s) => s.openApp);
   const toggleLauncher = useOS((s) => s.toggleLauncher);
@@ -71,7 +72,7 @@ export function Dock() {
   };
 
   return (
-    <div className="dock">
+    <div className="dock" data-dock={dockStyle}>
       <button className="dock-launcher" aria-label="Start" onClick={() => toggleLauncher()}>
         <AppIcon id="_start" size={18} />
         <span className="dock-launcher-label">Start</span>
@@ -107,10 +108,11 @@ export function Dock() {
         })}
       </div>
 
-      {windows.length > 0 && (
-        <>
-          <span className="dock-divider" />
-          <div className="dock-tasks">
+      <span className="dock-divider" />
+
+      <div className="dock-tasks">
+        {windows.length > 0 && (
+          <>
             {windows.map((w) => {
               const meta = APP_MAP[w.appId];
               const active = focusedId === w.id && !w.minimized;
@@ -136,9 +138,9 @@ export function Dock() {
                 </button>
               );
             })}
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
       <SystemTray />
     </div>
   );

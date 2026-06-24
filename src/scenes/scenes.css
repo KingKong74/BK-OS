@@ -2351,3 +2351,163 @@
 .container-meta > div { display: flex; gap: 4px; }
 .container-meta dt { font-weight: 600; }
 .container-meta dd { margin: 0; color: var(--text-dim); font-family: ui-monospace, "Cascadia Code", "Consolas", monospace; font-size: 11px; }
+
+
+/* ============================================================
+   Independent taskbar theming — [data-dock] on the .dock element.
+   The dock can be win98 (silver) or win98-dark (night) regardless of
+   the global [data-scene] theme, so you can mix light OS chrome with a
+   dark taskbar or vice-versa. Both styles are full-width bottom
+   taskbars; only the colours differ. These rules live at the end of the
+   file so they win over the scene-scoped .dock rules by source order.
+   ============================================================ */
+
+/* ---- Shared taskbar layout (both dock styles) ---- */
+.dock[data-dock] {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  width: 100%;
+  transform: none;
+  border-radius: 0;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 4px;
+}
+[data-dock] .dock-launcher {
+  height: 26px;
+  border-radius: 0;
+  padding: 0 11px 0 7px;
+  gap: 6px;
+  font-weight: 700;
+}
+[data-dock] .dock-launcher-label { letter-spacing: 0.2px; }
+[data-dock] .dock-taskview {
+  width: 26px;
+  height: 26px;
+  border-radius: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+}
+[data-dock] .dock-pins { display: flex; align-items: center; gap: 2px; }
+[data-dock] .dock-app { padding: 0; }
+[data-dock] .dock-tile { width: 28px; height: 24px; border-radius: 0; }
+[data-dock] .dock-divider {
+  display: block;
+  width: 0;
+  height: 20px;
+  margin: 0 3px;
+  background: transparent;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #ffffff;
+}
+[data-dock] .dock-tasks {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+}
+[data-dock] .dock-task {
+  height: 24px;
+  border-radius: 0;
+  border: none;
+  max-width: 168px;
+  min-width: 0;
+  flex: 0 1 auto;
+  padding: 0 9px;
+  gap: 6px;
+  font-size: 12px;
+}
+[data-dock] .dock-search { border-radius: 0; height: 24px; }
+
+/* ---- win98 (silver) ---- */
+.dock[data-dock="win98"] {
+  background: #c0c0c0;
+  box-shadow: inset 0 1px #ffffff, inset 0 2px #dfdfdf;
+}
+[data-dock="win98"] .dock-launcher,
+[data-dock="win98"] .dock-taskview,
+[data-dock="win98"] .dock-tile,
+[data-dock="win98"] .dock-task {
+  background: #c0c0c0;
+  color: #000;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #ffffff,
+    inset -2px -2px #808080,
+    inset 2px 2px #dfdfdf;
+}
+[data-dock="win98"] .dock-task:hover:not(.is-active) { background: #cacaca; }
+[data-dock="win98"] .dock-launcher:active,
+[data-dock="win98"] .dock-taskview:active,
+[data-dock="win98"] .dock-task.is-active {
+  box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #ffffff;
+  background: #c0c0c0;
+  color: #000;
+}
+[data-dock="win98"] .dock-divider { border-left-color: #808080; border-right-color: #ffffff; }
+[data-dock="win98"] .dock-search {
+  background: #ffffff;
+  border: 1px solid #0a0a0a;
+  box-shadow: inset 1px 1px #808080;
+}
+[data-dock="win98"] .dock-search input { color: #000; }
+[data-dock="win98"] .system-tray {
+  background: #c0c0c0;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #ffffff;
+}
+[data-dock="win98"] .tray-btn { color: #000; }
+[data-dock="win98"] .tray-btn:hover { background: rgba(0, 0, 128, 0.18); }
+[data-dock="win98"] .tray-clock { color: #000; }
+
+/* ---- win98-dark (night) ---- */
+.dock[data-dock="win98-dark"] {
+  background: #2a2a32;
+  box-shadow: inset 0 1px #4a4a52, inset 0 2px #3a3a44;
+}
+[data-dock="win98-dark"] .dock-launcher,
+[data-dock="win98-dark"] .dock-taskview,
+[data-dock="win98-dark"] .dock-tile,
+[data-dock="win98-dark"] .dock-task {
+  background: #2a2a32;
+  color: #e8e8ea;
+  box-shadow:
+    inset -1px -1px #050508,
+    inset 1px 1px #4a4a52,
+    inset -2px -2px #1a1a22,
+    inset 2px 2px #3a3a44;
+}
+[data-dock="win98-dark"] .dock-task:hover:not(.is-active) { background: #33333c; }
+[data-dock="win98-dark"] .dock-launcher:active,
+[data-dock="win98-dark"] .dock-taskview:active,
+[data-dock="win98-dark"] .dock-task.is-active {
+  box-shadow: inset 1px 1px #050508, inset -1px -1px #4a4a52;
+  background: #23232a;
+  color: #ffffff;
+}
+[data-dock="win98-dark"] .dock-divider { border-left-color: #1a1a22; border-right-color: #4a4a52; }
+[data-dock="win98-dark"] .dock-search {
+  background: #1f1f26;
+  border: 1px solid #050508;
+  box-shadow: inset 1px 1px #1a1a22, inset -1px -1px #4a4a52;
+  color: #e8e8ea;
+}
+[data-dock="win98-dark"] .dock-search input { color: #e8e8ea; }
+[data-dock="win98-dark"] .dock-search input::placeholder { color: #8a8a92; }
+[data-dock="win98-dark"] .system-tray {
+  background: #23232a;
+  box-shadow: inset 1px 1px #1a1a22, inset -1px -1px #4a4a52;
+}
+[data-dock="win98-dark"] .tray-btn { color: #cfcfd6; }
+[data-dock="win98-dark"] .tray-btn:hover { background: rgba(120, 150, 220, 0.22); }
+[data-dock="win98-dark"] .tray-clock { color: #e8e8ea; }
