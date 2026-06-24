@@ -99,6 +99,7 @@ interface OSState {
   dockMatchesTheme: boolean;     // when true, switching theme auto-syncs the dock
   launcherStyle: LauncherStyle;  // classic Win98 start menu vs modern Win11 panel
   explorerView: ExplorerView;    // small / large icons / details (global default)
+  externalAppMode: "new-tab" | "in-window"; // how addon-external apps launch
   wallpaperColor: string | null; // null = follow the theme's default wallpaper
   soundEffects: boolean;         // stub — UI only for now
   windows: WindowState[];
@@ -133,6 +134,7 @@ interface OSState {
   setDockMatchesTheme: (on: boolean) => void;
   setLauncherStyle: (style: LauncherStyle) => void;
   setExplorerView: (view: ExplorerView) => void;
+  setExternalAppMode: (mode: "new-tab" | "in-window") => void;
   setWallpaperColor: (color: string | null) => void;
   setSoundEffects: (on: boolean) => void;
   toggleLauncher: (open?: boolean) => void;
@@ -295,6 +297,7 @@ export const useOS = create<OSState>()(
       dockMatchesTheme: true,
       launcherStyle: "classic",
       explorerView: "large",
+      externalAppMode: "new-tab",
       wallpaperColor: null,
       soundEffects: false,
       windows: [],
@@ -339,6 +342,7 @@ export const useOS = create<OSState>()(
         set((s) => (on ? { dockMatchesTheme: true, dockStyle: themeToDock(s.scene) } : { dockMatchesTheme: false })),
       setLauncherStyle: (style) => set({ launcherStyle: style }),
       setExplorerView: (view) => set({ explorerView: view }),
+      setExternalAppMode: (mode) => set({ externalAppMode: mode }),
       setWallpaperColor: (color) => set({ wallpaperColor: color }),
       setSoundEffects: (on) => set({ soundEffects: on }),
       toggleLauncher: (open) =>
@@ -609,6 +613,19 @@ export const useOS = create<OSState>()(
         }
         const meta = APP_MAP[targetAppId];
         if (!meta) return;
+
+        // External (addon-external) apps open in a new browser tab by default
+        // (configurable in Settings). externalOnly apps always do. Built-in and
+        // addon-native apps always open in-window.
+        if (
+          meta.origin === "addon-external" && meta.url &&
+          (meta.externalOnly || get().externalAppMode === "new-tab")
+        ) {
+          if (typeof window !== "undefined") window.open(meta.url, "_blank", "noopener,noreferrer");
+          set({ launcherOpen: false });
+          return;
+        }
+
         const state = get();
         const existing = state.windows.find((w) => w.appId === targetAppId);
         const z = state.zCounter + 1;
@@ -810,6 +827,7 @@ export const useOS = create<OSState>()(
         dockMatchesTheme: s.dockMatchesTheme,
         launcherStyle: s.launcherStyle,
         explorerView: s.explorerView,
+        externalAppMode: s.externalAppMode,
         wallpaperColor: s.wallpaperColor,
         soundEffects: s.soundEffects,
         windows: s.windows,

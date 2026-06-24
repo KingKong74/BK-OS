@@ -61,6 +61,8 @@ export function SettingsApp() {
   const setGridSnap = useOS((s) => s.setGridSnap);
   const soundEffects = useOS((s) => s.soundEffects);
   const setSoundEffects = useOS((s) => s.setSoundEffects);
+  const externalAppMode = useOS((s) => s.externalAppMode);
+  const setExternalAppMode = useOS((s) => s.setExternalAppMode);
   const resetIconPositions = useOS((s) => s.resetIconPositions);
 
   const hostname = typeof window !== "undefined" ? window.location.hostname : "bkos";
@@ -182,7 +184,21 @@ export function SettingsApp() {
         {cat === "apps" && (
           <>
             <h2 className="settings2-h">Apps</h2>
-            <p className="settings2-sub">Manage pinned shortcuts and default apps.</p>
+            <label className="settings2-row">
+              <span>
+                <span className="settings2-row-title">Open external apps in a new tab</span>
+                <span className="settings2-row-desc">External apps (Moniqr, Claude, social links) open in a browser tab. Turn off to open them inside a BK-OS window.</span>
+              </span>
+              <button
+                className={"toggle" + (externalAppMode === "new-tab" ? " is-on" : "")}
+                role="switch"
+                aria-checked={externalAppMode === "new-tab"}
+                onClick={() => setExternalAppMode(externalAppMode === "new-tab" ? "in-window" : "new-tab")}
+              >
+                <span className="toggle-knob" />
+              </button>
+            </label>
+            <h2 className="settings2-h">Pinned shortcuts</h2>
             <div className="settings2-empty">
               <Icon name="folder" size={26} />
               <p className="settings2-empty-title">Pinned shortcut management</p>
