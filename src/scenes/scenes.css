@@ -2930,61 +2930,88 @@
 .webdav-steps code { font-family: ui-monospace, "Cascadia Code", "Consolas", monospace; font-size: 11px; background: var(--ipanel-2); padding: 1px 4px; }
 
 /* ============================================================
-   Centered taskbar — Win11-style: Start pinned far-left, the pinned +
-   running icons clustered in the middle, tray pinned far-right. Frosted
-   translucent dark bar, flat icons, rounded active pill with an accent
-   underline. Distinct from midnight (which is glow-bevelled and left-aligned).
+   Windows 11 taskbar — a floating, rounded, frosted dock centred above the
+   bottom edge, with a SEPARATE floating tray pill on the right. Win11 vibes
+   in BK-OS accent colours. Other docks stay flush to the bottom edge.
+   NB: centred with width:fit-content + auto margins (NOT transform), so the
+   position:fixed tray below isn't trapped in a transformed ancestor.
+   The 6px bottom gap + ~34px height = 40px footprint == DOCK_RESERVED, so
+   maximised windows still sit flush above it.
    ============================================================ */
-.dock[data-dock="centered"] {
-  background: rgba(18, 20, 30, 0.88);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.06);
-  border-top: 1px solid rgba(120, 150, 220, 0.20);
+.dock[data-dock="windows-11"] {
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: calc(100vw - 20px);
+  transform: none;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 11px;
+  background: rgba(20, 22, 32, 0.78);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  border-top: 0;
 }
-/* Layout: hide search + dividers, center the middle cluster via auto margins */
-[data-dock="centered"] .dock-search-wrap { display: none; }
-[data-dock="centered"] .dock-divider { display: none; }
-[data-dock="centered"] .dock-taskview { margin-left: auto; }
-[data-dock="centered"] .system-tray { margin-left: auto; }
-[data-dock="centered"] .dock-tasks { flex: 0 0 auto; min-width: 0; overflow: visible; }
+[data-dock="windows-11"] .dock-divider { display: none; }
+[data-dock="windows-11"] .dock-tasks { flex: 0 0 auto; min-width: 0; overflow: visible; }
+
+/* Compact rounded search (Win11 keeps search in the centre cluster) */
+[data-dock="windows-11"] .dock-search {
+  background: rgba(255, 255, 255, 0.08);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  color: #c8d2e6;
+  height: 26px;
+}
+[data-dock="windows-11"] .dock-search input { color: #e8ebf2; }
+[data-dock="windows-11"] .dock-search input::placeholder { color: #8a93a6; }
 
 /* Start button */
-[data-dock="centered"] .dock-launcher {
+[data-dock="windows-11"] .dock-launcher {
   background: linear-gradient(180deg, #1c2950 0%, #16213e 100%);
   color: #7fc0ff;
+  border-radius: 7px;
   box-shadow: inset 0 0 0 1px rgba(77, 159, 255, 0.42);
 }
-[data-dock="centered"] .dock-launcher:hover { background: #233164; box-shadow: inset 0 0 0 1px rgba(109, 179, 255, 0.7); }
-[data-dock="centered"] .dock-launcher:active { box-shadow: inset 0 0 0 1px rgba(77,159,255,0.5), inset 0 2px 4px rgba(0,0,0,0.5); }
+[data-dock="windows-11"] .dock-launcher:hover { background: #233164; box-shadow: inset 0 0 0 1px rgba(109, 179, 255, 0.7); }
 
 /* Task view + pinned tiles: flat, flush, rounded hover */
-[data-dock="centered"] .dock-taskview { background: transparent; color: #c8d2e6; box-shadow: none; border-radius: 6px; }
-[data-dock="centered"] .dock-taskview:hover { background: rgba(255, 255, 255, 0.10); }
-[data-dock="centered"] .dock-tile { background: transparent; box-shadow: none; border-radius: 6px; }
-[data-dock="centered"] .dock-app:hover .dock-tile { background: rgba(255, 255, 255, 0.10); }
-[data-dock="centered"] .dock-app:active .dock-tile { background: rgba(255, 255, 255, 0.16); }
+[data-dock="windows-11"] .dock-taskview { background: transparent; color: #c8d2e6; box-shadow: none; border-radius: 6px; }
+[data-dock="windows-11"] .dock-taskview:hover { background: rgba(255, 255, 255, 0.10); }
+[data-dock="windows-11"] .dock-tile { background: transparent; box-shadow: none; border-radius: 6px; }
+[data-dock="windows-11"] .dock-app:hover .dock-tile { background: rgba(255, 255, 255, 0.10); }
+[data-dock="windows-11"] .dock-app:active .dock-tile,
+[data-dock="windows-11"] .dock-app.is-active .dock-tile { background: rgba(255, 255, 255, 0.16); }
 
 /* Running tasks: Win11 rounded pill + accent underline when active */
-[data-dock="centered"] .dock-task {
-  background: rgba(255, 255, 255, 0.05);
-  color: #dbe3f2;
-  box-shadow: none;
-  border-radius: 6px;
-}
-[data-dock="centered"] .dock-task:hover:not(.is-active) { background: rgba(255, 255, 255, 0.12); }
-[data-dock="centered"] .dock-task.is-active {
-  background: rgba(77, 159, 255, 0.16);
-  color: #ffffff;
-  box-shadow: inset 0 -2px 0 #4d9fff;
-}
-[data-dock="centered"] .dock-task.is-min { opacity: 0.5; }
+[data-dock="windows-11"] .dock-task { background: rgba(255, 255, 255, 0.05); color: #dbe3f2; box-shadow: none; border-radius: 6px; }
+[data-dock="windows-11"] .dock-task:hover:not(.is-active) { background: rgba(255, 255, 255, 0.12); }
+[data-dock="windows-11"] .dock-task.is-active { background: rgba(77, 159, 255, 0.16); color: #ffffff; box-shadow: inset 0 -2px 0 #4d9fff; }
+[data-dock="windows-11"] .dock-task.is-min { opacity: 0.5; }
+[data-dock="windows-11"] .dock-app.is-running::after { background: #4d9fff; box-shadow: 0 0 5px rgba(77, 159, 255, 0.6); }
 
-/* Tray + clock */
-[data-dock="centered"] .system-tray { background: transparent; box-shadow: none; }
-[data-dock="centered"] .tray-btn { color: #c8d2e6; }
-[data-dock="centered"] .tray-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
-[data-dock="centered"] .tray-clock { color: #dbe3f2; font-family: ui-monospace, "Cascadia Code", "Consolas", monospace; font-size: 11px; }
+/* Separate floating tray pill, bottom-right */
+[data-dock="windows-11"] .system-tray {
+  position: fixed;
+  bottom: 6px;
+  right: 10px;
+  margin-left: 0;
+  padding: 4px 10px;
+  border-radius: 11px;
+  background: rgba(20, 22, 32, 0.78);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  z-index: 2147483000;
+}
+[data-dock="windows-11"] .tray-btn { color: #c8d2e6; }
+[data-dock="windows-11"] .tray-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+[data-dock="windows-11"] .tray-clock { color: #dbe3f2; font-family: ui-monospace, "Cascadia Code", "Consolas", monospace; font-size: 11px; }
 
 /* ============================================================
    Modern (Win11-style) Start menu — centered, frosted dark panel that
@@ -3067,8 +3094,8 @@
 [data-dock="midnight"] .dock-app:hover .dock-tile { background: rgba(77, 159, 255, 0.16); box-shadow: none; }
 [data-dock="midnight"] .dock-app:active .dock-tile,
 [data-dock="midnight"] .dock-app.is-active .dock-tile { background: rgba(77, 159, 255, 0.26); box-shadow: none; }
-[data-dock="centered"] .dock-app:active .dock-tile,
-[data-dock="centered"] .dock-app.is-active .dock-tile { background: rgba(255, 255, 255, 0.16); box-shadow: none; }
+[data-dock="windows-11"] .dock-app:active .dock-tile,
+[data-dock="windows-11"] .dock-app.is-active .dock-tile { background: rgba(255, 255, 255, 0.16); box-shadow: none; }
 
 /* Running indicator — underline beneath pinned apps with an open window.
    Wider when that app is the focused one. Overrides the win98 hide rule. */
@@ -3089,7 +3116,7 @@
 [data-dock="win98"] .dock-app.is-running::after { background: #000080; }
 [data-dock="win98-dark"] .dock-app.is-running::after { background: #6da0e0; }
 [data-dock="midnight"] .dock-app.is-running::after { background: #4d9fff; box-shadow: 0 0 5px rgba(77,159,255,0.6); }
-[data-dock="centered"] .dock-app.is-running::after { background: #4d9fff; box-shadow: 0 0 5px rgba(77,159,255,0.6); }
+[data-dock="windows-11"] .dock-app.is-running::after { background: #4d9fff; box-shadow: 0 0 5px rgba(77,159,255,0.6); }
 
 /* ============================================================
    Explorer view modes — Small icons / Large icons (default) / Details.

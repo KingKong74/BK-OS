@@ -14,7 +14,7 @@ const DOCKS: { id: DockStyleId; name: string; blurb: string; bar: string; light:
   { id: "win98", name: "Silver", blurb: "Classic grey taskbar, icons left.", bar: "#c0c0c0", light: "#ffffff", dark: "#808080", start: "#c0c0c0", startFg: "#000" },
   { id: "win98-dark", name: "Win98 at Night", blurb: "Dark bevels, icons left.", bar: "#2a2a32", light: "#4a4a52", dark: "#1a1a22", start: "#2a2a32", startFg: "#e8e8ea" },
   { id: "midnight", name: "Midnight", blurb: "Near-black with a blue glow.", bar: "#0a0a14", light: "#3d5a9a", dark: "#050510", start: "#16213e", startFg: "#6db3ff", glow: "#4d9fff" },
-  { id: "centered", name: "Centered", blurb: "Win11-style — icons in the middle.", bar: "#14161f", light: "#2a3550", dark: "#08080e", start: "#1c2950", startFg: "#7fc0ff", glow: "#4d9fff", centered: true },
+  { id: "windows-11", name: "Windows 11", blurb: "Floating rounded dock, icons centered.", bar: "#14161f", light: "#2a3550", dark: "#08080e", start: "#1c2950", startFg: "#7fc0ff", glow: "#4d9fff", centered: true },
 ];
 
 const LAUNCHERS: { id: LauncherStyle; name: string; blurb: string }[] = [
@@ -240,12 +240,15 @@ function DockPreview({ dk }: { dk: typeof DOCKS[number] }) {
     <span style={{ width: 17, height: 13, background: dk.start, color: dk.startFg, boxShadow: dk.glow ? `inset 0 0 0 1px ${dk.glow}, 0 0 5px ${dk.glow}` : `inset -1px -1px ${dk.dark}, inset 1px 1px ${dk.light}` }} />
   );
   if (dk.centered) {
+    // Floating, rounded, centered pill + a separate floating tray pill.
+    const pill: React.CSSProperties = { position: "absolute", bottom: 5, display: "flex", alignItems: "center", gap: 3, padding: "3px 5px", borderRadius: 7, background: "rgba(22,24,34,0.92)", boxShadow: "0 2px 7px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.10)" };
     return (
-      <span style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 20, background: dk.bar, boxShadow: `inset 0 1px ${dk.light}`, display: "flex", alignItems: "center", padding: "0 4px" }}>
-        {start}
-        <span style={{ margin: "0 auto", display: "flex", gap: 3 }}>{chip()}{chip()}{chip()}</span>
-        <span style={{ width: 8, height: 13, background: "#0c0c16" }} />
-      </span>
+      <>
+        <span style={{ ...pill, left: "50%", transform: "translateX(-50%)" }}>
+          {start}{chip()}{chip()}{chip()}
+        </span>
+        <span style={{ ...pill, right: 5, width: 12, height: 13 }} />
+      </>
     );
   }
   return (
