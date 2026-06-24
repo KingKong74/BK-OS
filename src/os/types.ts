@@ -58,7 +58,8 @@ export type AppCategory =
   | "infrastructure"
   | "media"
   | "finance"
-  | "games";
+  | "games"
+  | "social";
 
 export interface CommandDescriptor {
   id: string;

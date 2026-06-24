@@ -6,6 +6,45 @@ import type { ReactNode } from "react";
  * Use id "_start" for the Start-button logo.
  */
 export const APP_ICONS: Record<string, ReactNode> = {
+  // ─── Social / external (abstract, NOT the literal brand logos) ───
+  github: (
+    <>
+      <rect x="3" y="3" width="26" height="26" rx="6" fill="#1f2328" />
+      <circle cx="11.5" cy="10.5" r="2.4" fill="#e6edf3" />
+      <circle cx="11.5" cy="21.5" r="2.4" fill="#e6edf3" />
+      <circle cx="21" cy="13.5" r="2.4" fill="#e6edf3" />
+      <path d="M11.5 13 V19" stroke="#e6edf3" strokeWidth="2" />
+      <path d="M11.5 16.5 H17 a3.5 3.5 0 0 0 3.5-3" stroke="#e6edf3" strokeWidth="2" fill="none" />
+    </>
+  ),
+  instagram: (
+    <>
+      <defs>
+        <linearGradient id="bk-ig" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#f9ce34" />
+          <stop offset="0.5" stopColor="#ee2a7b" />
+          <stop offset="1" stopColor="#6228d7" />
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="24" height="24" rx="7" fill="url(#bk-ig)" />
+      <circle cx="16" cy="16" r="6" fill="none" stroke="#fff" strokeWidth="2.4" />
+      <circle cx="22.5" cy="9.5" r="1.6" fill="#fff" />
+    </>
+  ),
+  linkedin: (
+    <>
+      <rect x="3" y="3" width="26" height="26" rx="6" fill="#0a66c2" />
+      <circle cx="16" cy="12" r="3.4" fill="#fff" />
+      <path d="M9.5 25 a6.5 6.5 0 0 1 13 0 Z" fill="#fff" />
+    </>
+  ),
+  youtube: (
+    <>
+      <rect x="3" y="7" width="26" height="18" rx="6" fill="#e0352b" />
+      <polygon points="13,12 13,20 21,16" fill="#fff" />
+    </>
+  ),
+
   _start: (
     <g transform="translate(4 4) skewY(-14)">
       <rect x="0" y="0" width="11" height="11" fill="#e34234" />

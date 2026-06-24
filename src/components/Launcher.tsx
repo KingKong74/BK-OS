@@ -15,7 +15,7 @@ const PINNED_IDS = ["mycomputer", "moniqr", "claude", "notepad", "settings"];
 
 // Category sections for the "all apps" area, in Start-menu order.
 const CATEGORY_ORDER: AppCategory[] = [
-  "system", "productivity", "development", "infrastructure", "media", "finance", "games",
+  "system", "productivity", "development", "infrastructure", "media", "finance", "social", "games",
 ];
 const CATEGORY_LABELS: Record<AppCategory, string> = {
   system: "System",
@@ -24,6 +24,7 @@ const CATEGORY_LABELS: Record<AppCategory, string> = {
   infrastructure: "Infrastructure",
   media: "Media",
   finance: "Finance",
+  social: "Social",
   games: "Games",
 };
 

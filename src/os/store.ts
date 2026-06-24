@@ -100,6 +100,7 @@ interface OSState {
   launcherStyle: LauncherStyle;  // classic Win98 start menu vs modern Win11 panel
   explorerView: ExplorerView;    // small / large icons / details (global default)
   externalAppMode: "new-tab" | "in-window"; // how addon-external apps launch
+  socialsSeeded: boolean;        // one-time flag: social desktop shortcuts added
   wallpaperColor: string | null; // null = follow the theme's default wallpaper
   soundEffects: boolean;         // stub — UI only for now
   windows: WindowState[];
@@ -166,6 +167,7 @@ interface OSState {
   permaDelete: (fullPath: string) => void;
   emptyRecycleBin: () => void;
   addDesktopShortcut: (appId: string, x: number, y: number) => void;
+  seedDefaultShortcuts: () => void;
   removeDesktopShortcut: (id: string) => void;
   renameDesktopShortcut: (id: string, label: string) => void;
   setPathLabel: (fullPath: string, label: string) => void;
@@ -298,6 +300,7 @@ export const useOS = create<OSState>()(
       launcherStyle: "classic",
       explorerView: "large",
       externalAppMode: "new-tab",
+      socialsSeeded: false,
       wallpaperColor: null,
       soundEffects: false,
       windows: [],
@@ -553,6 +556,18 @@ export const useOS = create<OSState>()(
             desktopShortcuts: [...s.desktopShortcuts, { id, appId }],
             iconPositions: { ...s.iconPositions, [id]: { x: Math.max(0, x), y: Math.max(MENUBAR_H + 4, y) } },
           };
+        }),
+      // One-time: add the default social desktop shortcuts. Gated by
+      // socialsSeeded so it runs once and won't re-add ones the user removed.
+      seedDefaultShortcuts: () =>
+        set((s) => {
+          if (s.socialsSeeded) return {};
+          const SOCIALS = ["github", "instagram", "linkedin", "youtube"];
+          const have = new Set(s.desktopShortcuts.map((d) => d.appId));
+          const toAdd = SOCIALS
+            .filter((id) => !have.has(id) && APP_MAP[id])
+            .map((id) => ({ id, appId: id }));
+          return { desktopShortcuts: [...s.desktopShortcuts, ...toAdd], socialsSeeded: true };
         }),
       removeDesktopShortcut: (id) =>
         set((s) => {
@@ -828,6 +843,7 @@ export const useOS = create<OSState>()(
         launcherStyle: s.launcherStyle,
         explorerView: s.explorerView,
         externalAppMode: s.externalAppMode,
+        socialsSeeded: s.socialsSeeded,
         wallpaperColor: s.wallpaperColor,
         soundEffects: s.soundEffects,
         windows: s.windows,

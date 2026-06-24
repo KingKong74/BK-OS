@@ -197,6 +197,37 @@ export const APPS: AppManifest[] = [
     origin: "addon-external", visibility: "private", category: "productivity",
     description: "Claude AI — opens in a new tab.",
   },
+
+  // ─── ADDON-EXTERNAL: social / external links (open in a new tab) ──
+  // externalOnly because these sites block iframe embedding anyway.
+  {
+    id: "github", name: "GitHub", icon: "code",
+    accent: "#1f2328", accentFg: "#ffffff",
+    url: "https://github.com/KingKong74", externalOnly: true,
+    origin: "addon-external", visibility: "private", category: "social",
+    description: "My GitHub profile.",
+  },
+  {
+    id: "instagram", name: "Instagram", icon: "photo",
+    accent: "#ee2a7b", accentFg: "#ffffff",
+    url: "https://www.instagram.com/bailz_king/", externalOnly: true,
+    origin: "addon-external", visibility: "private", category: "social",
+    description: "My Instagram.",
+  },
+  {
+    id: "linkedin", name: "LinkedIn", icon: "globe",
+    accent: "#0a66c2", accentFg: "#ffffff",
+    url: "https://www.linkedin.com/in/bailey-king-25b22a235/", externalOnly: true,
+    origin: "addon-external", visibility: "private", category: "social",
+    description: "My LinkedIn.",
+  },
+  {
+    id: "youtube", name: "YouTube", icon: "globe",
+    accent: "#e0352b", accentFg: "#ffffff",
+    url: "https://www.youtube.com/", externalOnly: true,
+    origin: "addon-external", visibility: "private", category: "social",
+    description: "YouTube.",
+  },
 ];
 
 export const APP_MAP: Record<string, AppManifest> = Object.fromEntries(

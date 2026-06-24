@@ -19,10 +19,14 @@ export function OS() {
   const shutdownPhase = useOS((s) => s.shutdownPhase);
   const initNotes = useOS((s) => s.initNotes);
   const notesReady = useOS((s) => s.notesReady);
+  const seedDefaultShortcuts = useOS((s) => s.seedDefaultShortcuts);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  // One-time: seed the default social desktop shortcuts (gated internally).
+  useEffect(() => { seedDefaultShortcuts(); }, [seedDefaultShortcuts]);
 
   // Hydrate sticky notes from /api/notes on first mount (AuthGate guarantees
   // we already have a session by the time we render).
