@@ -171,7 +171,9 @@ export function WindowFrame({ win }: { win: WindowState }) {
           {/* App icon derives from the same manifest source as the dock /
               launcher / desktop (AppIcon), so it's consistent everywhere.
               Slightly smaller when maximised, larger when restored. */}
-          {meta && <AppIcon id={win.appId} size={win.maximized ? 13 : 15} />}
+          {/* Chrome shrinks slightly when maximised (more out of the way),
+              looks more present when restored. */}
+          {meta && <AppIcon id={win.appId} size={win.maximized ? 13 : 17} />}
           {meta?.name}
         </span>
         <span className="window-controls">
