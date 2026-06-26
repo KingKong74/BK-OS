@@ -6,43 +6,64 @@ import type { ReactNode } from "react";
  * Use id "_start" for the Start-button logo.
  */
 export const APP_ICONS: Record<string, ReactNode> = {
-  // ─── Social / external (abstract, NOT the literal brand logos) ───
+  // ─── Social / external — chunky Win98 pixel-art, abstract category
+  // icons (NOT the literal brand logos). Hard edges, limited palette,
+  // bevelled like an icon someone drew pixel-by-pixel in 1998. ───
+
+  // GitHub → a "source code" document with syntax-highlighted lines + caret.
   github: (
-    <>
-      <rect x="3" y="3" width="26" height="26" rx="6" fill="#1f2328" />
-      <circle cx="11.5" cy="10.5" r="2.4" fill="#e6edf3" />
-      <circle cx="11.5" cy="21.5" r="2.4" fill="#e6edf3" />
-      <circle cx="21" cy="13.5" r="2.4" fill="#e6edf3" />
-      <path d="M11.5 13 V19" stroke="#e6edf3" strokeWidth="2" />
-      <path d="M11.5 16.5 H17 a3.5 3.5 0 0 0 3.5-3" stroke="#e6edf3" strokeWidth="2" fill="none" />
-    </>
+    <g shapeRendering="crispEdges">
+      <polygon points="6,3 21,3 26,8 26,29 6,29" fill="#f4f0e4" stroke="#000" />
+      <polygon points="21,3 21,8 26,8" fill="#cdc6ad" stroke="#000" />
+      <rect x="9" y="11" width="5" height="2" fill="#1f6feb" />
+      <rect x="15" y="11" width="6" height="2" fill="#2ea043" />
+      <rect x="11" y="15" width="4" height="2" fill="#e34234" />
+      <rect x="16" y="15" width="6" height="2" fill="#8a8a8a" />
+      <rect x="9" y="19" width="6" height="2" fill="#a06bff" />
+      <rect x="11" y="23" width="8" height="2" fill="#1f6feb" />
+      <rect x="20" y="23" width="2" height="2" fill="#000" />
+    </g>
   ),
+
+  // Instagram → an old-school chunky camera (body, lens, flash, shutter).
   instagram: (
-    <>
-      <defs>
-        <linearGradient id="bk-ig" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#f9ce34" />
-          <stop offset="0.5" stopColor="#ee2a7b" />
-          <stop offset="1" stopColor="#6228d7" />
-        </linearGradient>
-      </defs>
-      <rect x="4" y="4" width="24" height="24" rx="7" fill="url(#bk-ig)" />
-      <circle cx="16" cy="16" r="6" fill="none" stroke="#fff" strokeWidth="2.4" />
-      <circle cx="22.5" cy="9.5" r="1.6" fill="#fff" />
-    </>
+    <g shapeRendering="crispEdges">
+      <rect x="11" y="6" width="8" height="4" fill="#4a4a4a" stroke="#000" />
+      <rect x="4" y="9" width="24" height="18" fill="#787878" stroke="#000" />
+      <rect x="5" y="10" width="22" height="2" fill="#9c9c9c" />
+      <rect x="6" y="11" width="3" height="3" fill="#f3f0a4" stroke="#000" strokeWidth="0.5" />
+      <rect x="22" y="11" width="4" height="2" fill="#e34234" />
+      <circle cx="16" cy="19" r="6" fill="#333" stroke="#000" />
+      <circle cx="16" cy="19" r="3.4" fill="#2b5d8a" />
+      <rect x="13" y="16" width="2" height="2" fill="#bcd6ee" />
+    </g>
   ),
+
+  // LinkedIn → a tiny business card: portrait box + a person + text lines.
   linkedin: (
-    <>
-      <rect x="3" y="3" width="26" height="26" rx="6" fill="#0a66c2" />
-      <circle cx="16" cy="12" r="3.4" fill="#fff" />
-      <path d="M9.5 25 a6.5 6.5 0 0 1 13 0 Z" fill="#fff" />
-    </>
+    <g shapeRendering="crispEdges">
+      <rect x="4" y="8" width="24" height="16" fill="#f6f3ea" stroke="#000" />
+      <rect x="6" y="10" width="9" height="12" fill="#cfe0f2" stroke="#000" strokeWidth="0.5" />
+      <circle cx="10.5" cy="14" r="2.2" fill="#0a66c2" />
+      <path d="M7 22 a3.5 3.5 0 0 1 7 0 Z" fill="#0a66c2" />
+      <rect x="17" y="11" width="9" height="2" fill="#0a3a6a" />
+      <rect x="17" y="15" width="7" height="2" fill="#5a7a9a" />
+      <rect x="17" y="19" width="9" height="2" fill="#5a7a9a" />
+    </g>
   ),
+
+  // YouTube → a CRT television with antenna, dials and a VCR play arrow.
   youtube: (
-    <>
-      <rect x="3" y="7" width="26" height="18" rx="6" fill="#e0352b" />
-      <polygon points="13,12 13,20 21,16" fill="#fff" />
-    </>
+    <g shapeRendering="crispEdges">
+      <path d="M13 4 L16 11 M22 3 L17 11" stroke="#7a7a7a" strokeWidth="1.5" fill="none" />
+      <rect x="4" y="10" width="24" height="18" fill="#8a5a2b" stroke="#000" />
+      <rect x="5" y="11" width="22" height="2" fill="#a9743a" />
+      <rect x="6" y="13" width="15" height="13" fill="#b8c0b4" stroke="#000" />
+      <rect x="7" y="14" width="13" height="11" fill="#566b66" />
+      <polygon points="11,16 11,23 16,19.5" fill="#fff" stroke="#000" strokeWidth="0.5" />
+      <circle cx="24.5" cy="16" r="1.6" fill="#3a2410" />
+      <circle cx="24.5" cy="21" r="1.6" fill="#3a2410" />
+    </g>
   ),
 
   _start: (
@@ -137,20 +158,22 @@ export const APP_ICONS: Record<string, ReactNode> = {
     </>
   ),
 
+  // Moniqr (accounting) → a pixel calculator with a receipt curling out the top.
   moniqr: (
-    <>
-      <rect x="4" y="4" width="24" height="24" fill="#ffffff" stroke="#000" />
-      <rect x="6" y="6" width="7" height="7" fill="#000" />
-      <rect x="8" y="8" width="3" height="3" fill="#ffffff" />
-      <rect x="19" y="6" width="7" height="7" fill="#000" />
-      <rect x="21" y="8" width="3" height="3" fill="#ffffff" />
-      <rect x="6" y="19" width="7" height="7" fill="#000" />
-      <rect x="8" y="21" width="3" height="3" fill="#ffffff" />
-      <rect x="15" y="15" width="2" height="2" fill="#000" />
-      <rect x="19" y="16" width="2" height="2" fill="#000" />
-      <rect x="22" y="19" width="3" height="3" fill="#000" />
-      <rect x="16" y="22" width="2" height="2" fill="#000" />
-      <rect x="20" y="23" width="3" height="3" fill="#000" />
-    </>
+    <g shapeRendering="crispEdges">
+      <polygon points="11,2 23,2 23,12 21,10 19,12 17,10 15,12 13,10 11,12" fill="#fff" stroke="#000" />
+      <rect x="13" y="4" width="8" height="1.5" fill="#9a9a9a" />
+      <rect x="13" y="7" width="6" height="1.5" fill="#9a9a9a" />
+      <rect x="7" y="11" width="18" height="18" fill="#b8b8b8" stroke="#000" />
+      <rect x="8" y="12" width="16" height="2" fill="#d8d8d8" />
+      <rect x="9" y="14" width="14" height="4" fill="#9bbf6a" stroke="#000" strokeWidth="0.5" />
+      <rect x="18" y="15" width="4" height="2" fill="#2a4a1a" />
+      <rect x="9" y="20" width="3" height="3" fill="#8a8a8a" />
+      <rect x="13" y="20" width="3" height="3" fill="#8a8a8a" />
+      <rect x="9" y="24" width="3" height="3" fill="#8a8a8a" />
+      <rect x="13" y="24" width="3" height="3" fill="#8a8a8a" />
+      <rect x="17" y="20" width="3" height="7" fill="#dd8a3a" />
+      <rect x="21" y="20" width="3" height="7" fill="#cf7a2a" />
+    </g>
   ),
 };
