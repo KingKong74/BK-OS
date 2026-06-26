@@ -872,6 +872,50 @@
   border: 1px solid #000;
 }
 
+/* ============ Profile avatar (Avatar.tsx) ============ */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: none;
+  vertical-align: middle;
+  user-select: none;
+}
+.avatar-img {
+  object-fit: cover;
+  border-radius: 50%;
+}
+.avatar-svg {
+  border-radius: 50%;
+  display: block;
+}
+.avatar-initials {
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5b8def, #1f4fb0);
+  color: #fff;
+  font-family: var(--font);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+/* In the retro themes the launcher footer button is square, so square the
+   avatar inside it to match the chrome. */
+[data-scene="win98"] .launcher-fb-profile .avatar,
+[data-scene="win98"] .launcher-fb-profile .avatar-img,
+[data-scene="win98"] .launcher-fb-profile .avatar-svg,
+[data-scene="win98"] .launcher-fb-profile .avatar-initials,
+[data-scene="win98-dark"] .launcher-fb-profile .avatar,
+[data-scene="win98-dark"] .launcher-fb-profile .avatar-img,
+[data-scene="win98-dark"] .launcher-fb-profile .avatar-svg,
+[data-scene="win98-dark"] .launcher-fb-profile .avatar-initials {
+  border-radius: 0;
+}
+[data-scene="win98-dark"] .avatar-initials {
+  background: linear-gradient(135deg, #4a6db0, #233a72);
+}
+
 /* ============ Retro: External-only app card ============ */
 [data-scene="win98"] .web-app-external { background: #c0c0c0; color: #000; }
 [data-scene="win98"] .web-app-external-icon {

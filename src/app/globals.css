@@ -1899,6 +1899,23 @@ input:focus-visible,
 .settings2 .settings-about dd { margin: 0; color: var(--s2text); }
 .settings2 kbd { background: var(--s2hover); border: 1px solid var(--s2border); border-radius: 4px; padding: 1px 5px; font-size: 11px; }
 
+/* Profile avatar picker */
+.avatar-preview-row { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+.avatar-preview-meta { display: flex; flex-direction: column; gap: 2px; }
+.avatar-preview-name { font-weight: 700; font-size: 14px; color: var(--s2text); }
+.avatar-preview-kind { font-size: 12px; color: var(--s2dim); }
+.avatar-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+.avatar-opt { position: relative; padding: 6px; border: 1px solid var(--s2border); background: var(--s2card); border-radius: 10px; cursor: pointer; line-height: 0; }
+.avatar-opt:hover { border-color: var(--s2accent); }
+.avatar-opt.is-active { border-color: var(--s2accent); box-shadow: 0 0 0 1px var(--s2accent); }
+.avatar-opt .card-check { top: -6px; right: -6px; width: 16px; height: 16px; }
+.avatar-initials-row { display: flex; align-items: center; gap: 12px; }
+.avatar-initials-hint { font-size: 12px; color: var(--s2dim); }
+.avatar-custom-row { display: flex; align-items: center; gap: 14px; }
+.avatar-custom-row .settings2-link { margin-top: 0; }
+.settings-input { font: inherit; font-size: 14px; width: 84px; text-transform: uppercase; text-align: center; letter-spacing: 0.08em; padding: 7px 10px; border: 1px solid var(--s2border); background: var(--s2card); color: var(--s2text); border-radius: 7px; }
+.settings-input:focus { outline: none; border-color: var(--s2accent); box-shadow: 0 0 0 1px var(--s2accent); }
+
 .settings2-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 36px 16px; color: var(--s2dim); }
 .settings2-empty-title { font-size: 13px; font-weight: 700; color: var(--s2text); }
 .settings2-empty-sub { font-size: 12px; max-width: 320px; line-height: 1.45; }

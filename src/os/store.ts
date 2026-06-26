@@ -101,6 +101,7 @@ interface OSState {
   explorerView: ExplorerView;    // small / large icons / details (global default)
   externalAppMode: "new-tab" | "in-window"; // how addon-external apps launch
   socialsSeeded: boolean;        // one-time flag: social desktop shortcuts added
+  profileAvatar: { type: "preset" | "initials" | "custom"; value: string };
   wallpaperColor: string | null; // null = follow the theme's default wallpaper
   soundEffects: boolean;         // stub — UI only for now
   windows: WindowState[];
@@ -136,6 +137,7 @@ interface OSState {
   setLauncherStyle: (style: LauncherStyle) => void;
   setExplorerView: (view: ExplorerView) => void;
   setExternalAppMode: (mode: "new-tab" | "in-window") => void;
+  setProfileAvatar: (avatar: { type: "preset" | "initials" | "custom"; value: string }) => void;
   setWallpaperColor: (color: string | null) => void;
   setSoundEffects: (on: boolean) => void;
   toggleLauncher: (open?: boolean) => void;
@@ -301,6 +303,7 @@ export const useOS = create<OSState>()(
       explorerView: "large",
       externalAppMode: "new-tab",
       socialsSeeded: false,
+      profileAvatar: { type: "initials", value: "BK" },
       wallpaperColor: null,
       soundEffects: false,
       windows: [],
@@ -346,6 +349,7 @@ export const useOS = create<OSState>()(
       setLauncherStyle: (style) => set({ launcherStyle: style }),
       setExplorerView: (view) => set({ explorerView: view }),
       setExternalAppMode: (mode) => set({ externalAppMode: mode }),
+      setProfileAvatar: (avatar) => set({ profileAvatar: avatar }),
       setWallpaperColor: (color) => set({ wallpaperColor: color }),
       setSoundEffects: (on) => set({ soundEffects: on }),
       toggleLauncher: (open) =>
@@ -844,6 +848,7 @@ export const useOS = create<OSState>()(
         explorerView: s.explorerView,
         externalAppMode: s.externalAppMode,
         socialsSeeded: s.socialsSeeded,
+        profileAvatar: s.profileAvatar,
         wallpaperColor: s.wallpaperColor,
         soundEffects: s.soundEffects,
         windows: s.windows,

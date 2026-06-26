@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useOS } from "@/os/store";
 import { Icon } from "@/components/Icon";
+import { Avatar, PRESET_AVATARS, PRESET_IDS } from "@/components/Avatar";
 import type { ThemeId, DockStyleId, LauncherStyle, IconName } from "@/os/types";
 
 const THEMES: { id: ThemeId; name: string; blurb: string; swatch: { bg: string; window: string; title: string } }[] = [
@@ -31,9 +32,10 @@ const WALLPAPERS: { id: string; name: string; color: string }[] = [
   { id: "charcoal", name: "Charcoal", color: "#2b2b30" },
 ];
 
-type Cat = "appearance" | "taskbar" | "desktop" | "apps" | "sound" | "about";
+type Cat = "appearance" | "profile" | "taskbar" | "desktop" | "apps" | "sound" | "about";
 const CATEGORIES: { id: Cat; label: string; icon: IconName }[] = [
   { id: "appearance", label: "Appearance", icon: "sun" },
+  { id: "profile", label: "Profile", icon: "photo" },
   { id: "taskbar", label: "Taskbar", icon: "list" },
   { id: "desktop", label: "Desktop", icon: "grid" },
   { id: "apps", label: "Apps", icon: "folder" },
@@ -64,8 +66,39 @@ export function SettingsApp() {
   const externalAppMode = useOS((s) => s.externalAppMode);
   const setExternalAppMode = useOS((s) => s.setExternalAppMode);
   const resetIconPositions = useOS((s) => s.resetIconPositions);
+  const profileAvatar = useOS((s) => s.profileAvatar);
+  const setProfileAvatar = useOS((s) => s.setProfileAvatar);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const hostname = typeof window !== "undefined" ? window.location.hostname : "bkos";
+
+  // Read an uploaded image, downscale it to 128×128, and store it as a data
+  // URL. Downscaling keeps the persisted store small (it lives in localStorage).
+  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-picking the same file
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const N = 128;
+        const canvas = document.createElement("canvas");
+        canvas.width = N;
+        canvas.height = N;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        // cover-crop to a square
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2;
+        const sy = (img.height - side) / 2;
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, N, N);
+        setProfileAvatar({ type: "custom", value: canvas.toDataURL("image/png") });
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
 
   return (
     <div className="settings2">
@@ -112,6 +145,70 @@ export function SettingsApp() {
               ))}
             </div>
             {wallpaperColor && <button className="settings2-link" onClick={() => setWallpaperColor(null)}>Reset to theme default</button>}
+          </>
+        )}
+
+        {cat === "profile" && (
+          <>
+            <h2 className="settings2-h">Profile picture</h2>
+            <p className="settings2-sub">Shown on the Start menu and anywhere your face surfaces.</p>
+
+            <div className="avatar-preview-row">
+              <Avatar size={56} />
+              <div className="avatar-preview-meta">
+                <span className="avatar-preview-name">Bailey</span>
+                <span className="avatar-preview-kind">
+                  {profileAvatar.type === "custom" ? "Custom image"
+                    : profileAvatar.type === "preset" ? "Preset avatar"
+                    : "Initials"}
+                </span>
+              </div>
+            </div>
+
+            <h2 className="settings2-h">Presets</h2>
+            <div className="avatar-grid">
+              {PRESET_IDS.map((id) => {
+                const active = profileAvatar.type === "preset" && profileAvatar.value === id;
+                return (
+                  <button
+                    key={id}
+                    className={"avatar-opt" + (active ? " is-active" : "")}
+                    title={id}
+                    onClick={() => setProfileAvatar({ type: "preset", value: id })}
+                  >
+                    <svg viewBox="0 0 32 32" width={44} height={44} className="avatar avatar-svg" aria-hidden="true">
+                      {PRESET_AVATARS[id]}
+                    </svg>
+                    {active && <Check />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <h2 className="settings2-h">Initials</h2>
+            <p className="settings2-sub">Up to two characters on a coloured chip.</p>
+            <div className="avatar-initials-row">
+              <input
+                className="settings-input"
+                type="text"
+                maxLength={2}
+                placeholder="BK"
+                value={profileAvatar.type === "initials" ? profileAvatar.value : ""}
+                onChange={(e) => setProfileAvatar({ type: "initials", value: e.target.value.toUpperCase() })}
+                onFocus={() => { if (profileAvatar.type !== "initials") setProfileAvatar({ type: "initials", value: profileAvatar.value.slice(0, 2) }); }}
+              />
+              <span className="avatar-initials-hint">Letters or numbers</span>
+            </div>
+
+            <h2 className="settings2-h">Custom image</h2>
+            <p className="settings2-sub">Upload a photo — it&rsquo;s cropped to a square and scaled down to keep things snappy.</p>
+            <div className="avatar-custom-row">
+              <button className="settings2-btn" onClick={() => fileRef.current?.click()}>Upload image…</button>
+              {profileAvatar.type === "custom" && (
+                <button className="settings2-link" onClick={() => setProfileAvatar({ type: "initials", value: "BK" })}>Remove</button>
+              )}
+              <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPickFile} />
+            </div>
           </>
         )}
 

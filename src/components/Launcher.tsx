@@ -6,6 +6,7 @@ import { APPS, visibleApps } from "@/os/appsMeta";
 import type { AppCategory } from "@/os/types";
 import { Icon } from "./Icon";
 import { AppIcon } from "./AppIcon";
+import { Avatar } from "./Avatar";
 import { searchAll } from "@/hooks/useFs";
 import { getClientMode } from "@/lib/mode";
 import UserStatusBar from '@/components/UserStatusBar';
@@ -297,21 +298,7 @@ export function Launcher() {
                 <Icon name="folder" size={16} />
               </button>
               <button className="launcher-fb launcher-fb-profile" title="Bailey">
-                <svg viewBox="0 0 16 16" width="20" height="20" shapeRendering="crispEdges">
-                  {/* hair */}
-                  <path fill="#5a3416" d="M5 2h6v1H5zM4 3h8v1H4zM3 4h10v2H3z" />
-                  {/* face */}
-                  <path fill="#f4c89e" d="M5 4h6v1H5zM4 5h8v3H4zM5 8h6v1H5z" />
-                  {/* eyes */}
-                  <rect x="6" y="6" width="1" height="1" fill="#000" />
-                  <rect x="9" y="6" width="1" height="1" fill="#000" />
-                  {/* mouth */}
-                  <rect x="7" y="8" width="2" height="1" fill="#7a3a3a" />
-                  {/* shirt */}
-                  <path fill="#3e6db8" d="M4 10h8v1H4zM3 11h10v1H3zM2 12h12v4H2z" />
-                  {/* collar */}
-                  <path fill="#f4c89e" d="M6 9h4v1H6z" />
-                </svg>
+                <Avatar size={20} />
               </button>
             </div>
           </div>
