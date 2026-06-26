@@ -18,7 +18,11 @@ body {
   background: #000;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  /* Chunky larger Win98 arrow (24x32 PNG), hotspot at the tip. Raster, not
+     SVG, because Chrome doesn't render SVG cursors. */
+  cursor: url("/cursors/arrow.png") 0 0, default;
 }
+.os-root { cursor: url("/cursors/arrow.png") 0 0, default; }
 
 button,
 input {
@@ -586,11 +590,11 @@ input {
 
 /* ---------- Desktop icons ---------- */
 .desktop-icons { position: absolute; top: 14px; left: 14px; display: flex; flex-direction: column; gap: 10px; z-index: 0; }
-.desktop-icon { position: absolute; z-index: 0; width: 80px; height: 84px; box-sizing: border-box; border: 1px solid transparent; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px; border-radius: 4px; color: var(--text); touch-action: none; user-select: none; }
+.desktop-icon { position: absolute; z-index: 0; width: 100px; height: 104px; box-sizing: border-box; border: 1px solid transparent; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 5px; border-radius: 4px; color: var(--text); touch-action: none; user-select: none; }
 .desktop-icon.is-selected { background: rgba(127, 127, 127, 0.18); border-color: var(--border); }
-.desktop-icon-tile { width: 48px; height: 48px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
-.desktop-icon-tile .pixel-img { width: 40px; height: 40px; object-fit: contain; }
-.desktop-icon-label { font-size: 11px; text-align: center; line-height: 1.2; max-width: 76px; word-break: break-word; }
+.desktop-icon-tile { width: 60px; height: 60px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
+.desktop-icon-tile .pixel-img { width: 50px; height: 50px; object-fit: contain; }
+.desktop-icon-label { font-size: 13px; text-align: center; line-height: 1.2; max-width: 94px; word-break: break-word; }
 
 /* ---------- File explorer ---------- */
 .explorer { display: flex; flex-direction: column; height: 100%; color: var(--text); font-size: 13px; background: var(--surface); }
@@ -1383,12 +1387,14 @@ input:focus-visible,
 
 /* ============ Desktop shortcut arrow indicator ============ */
 .desktop-icon-tile { position: relative; }
-.desktop-icon-shortcut {
+/* Two-class selector so it outranks `.desktop-icon-tile .pixel-img` (which
+   would otherwise stretch this little overlay to the full icon size). */
+.desktop-icon-tile .desktop-icon-shortcut {
   position: absolute;
   bottom: -2px;
   left: -2px;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;

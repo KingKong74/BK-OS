@@ -14,8 +14,8 @@ import {
   type FsNodeDTO,
 } from "@/hooks/useFs";
 
-const CELL_W = 88;
-const CELL_H = 98;
+const CELL_W = 108;
+const CELL_H = 120;
 const ORIGIN_X = 16;
 const ORIGIN_Y = MENUBAR_H + 14;
 
@@ -46,8 +46,8 @@ function posOf(cell: { col: number; row: number }) {
 function clampCell(c: { col: number; row: number }) {
   let { col, row } = c;
   if (typeof window !== "undefined") {
-    const maxCol = Math.max(0, Math.floor((window.innerWidth - 90 - ORIGIN_X) / CELL_W));
-    const maxRow = Math.max(0, Math.floor((window.innerHeight - 130 - ORIGIN_Y) / CELL_H));
+    const maxCol = Math.max(0, Math.floor((window.innerWidth - 112 - ORIGIN_X) / CELL_W));
+    const maxRow = Math.max(0, Math.floor((window.innerHeight - 150 - ORIGIN_Y) / CELL_H));
     col = Math.min(col, maxCol);
     row = Math.min(row, maxRow);
   }
@@ -295,13 +295,13 @@ export function DesktopIcons() {
     if (item.kind === "app") {
       return (
         <span className="desktop-icon-tile">
-          <AppIcon id={item.appId} size={32} />
+          <AppIcon id={item.appId} size={50} />
           <img
             src="/icons/overlay_shortcut-1.png"
             alt=""
             className="pixel-img desktop-icon-shortcut"
-            width={14}
-            height={14}
+            width={17}
+            height={17}
             draggable={false}
           />
         </span>
@@ -310,13 +310,13 @@ export function DesktopIcons() {
     if (item.kind === "folder") {
       return (
         <span className="desktop-icon-tile">
-          <FolderImg size={40} />
+          <FolderImg size={50} />
         </span>
       );
     }
     return (
       <span className="desktop-icon-tile">
-        <FileImg kind={item.fileKind} size={40} />
+        <FileImg kind={item.fileKind} size={50} />
       </span>
     );
   };
