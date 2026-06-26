@@ -10,10 +10,13 @@ import { PoweredOff } from "./PoweredOff";
 import { RestartSequence } from "./RestartSequence";
 import { ShutdownSequence } from "./ShutdownSequence";
 import { BusyCursor } from "./BusyCursor";
+import { BootSequence } from "./BootSequence";
+import { Y2KLayer } from "./Y2KLayer";
 
 export function OS() {
   const scene = useOS((s) => s.scene);
   const wallpaperColor = useOS((s) => s.wallpaperColor);
+  const y2k = useOS((s) => s.y2k);
   const locked = useOS((s) => s.locked);
   const poweredOff = useOS((s) => s.poweredOff);
   const restartPhase = useOS((s) => s.restartPhase);
@@ -23,6 +26,8 @@ export function OS() {
   const seedDefaultShortcuts = useOS((s) => s.seedDefaultShortcuts);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [mounted, setMounted] = useState(false);
+  // Y2K boot screen shows once per page load (when Y2K effects are on).
+  const [bootDone, setBootDone] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -54,6 +59,8 @@ export function OS() {
           {restartPhase !== "off" && <RestartSequence />}
           {shutdownPhase !== "off" && <ShutdownSequence />}
           <BusyCursor />
+          {y2k && <Y2KLayer />}
+          {y2k && !bootDone && <BootSequence onDone={() => setBootDone(true)} />}
         </>
       )}
     </div>

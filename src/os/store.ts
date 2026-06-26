@@ -104,6 +104,7 @@ interface OSState {
   msnSeeded: boolean;            // one-time flag: MSN Messenger desktop shortcut added
   profileAvatar: { type: "preset" | "initials" | "custom"; value: string };
   wallpaperColor: string | null; // null = follow the theme's default wallpaper
+  y2k: boolean;                  // Y2K glitch effects (scanlines, boot, status text)
   soundEffects: boolean;         // stub — UI only for now
   windows: WindowState[];
   focusedId: string | null;
@@ -140,6 +141,7 @@ interface OSState {
   setExternalAppMode: (mode: "new-tab" | "in-window") => void;
   setProfileAvatar: (avatar: { type: "preset" | "initials" | "custom"; value: string }) => void;
   setWallpaperColor: (color: string | null) => void;
+  setY2k: (on: boolean) => void;
   setSoundEffects: (on: boolean) => void;
   toggleLauncher: (open?: boolean) => void;
   setSnapPreview: (zone: SnapZone | null) => void;
@@ -307,6 +309,7 @@ export const useOS = create<OSState>()(
       msnSeeded: false,
       profileAvatar: { type: "initials", value: "BK" },
       wallpaperColor: null,
+      y2k: true,
       soundEffects: false,
       windows: [],
       focusedId: null,
@@ -353,6 +356,7 @@ export const useOS = create<OSState>()(
       setExternalAppMode: (mode) => set({ externalAppMode: mode }),
       setProfileAvatar: (avatar) => set({ profileAvatar: avatar }),
       setWallpaperColor: (color) => set({ wallpaperColor: color }),
+      setY2k: (on) => set({ y2k: on }),
       setSoundEffects: (on) => set({ soundEffects: on }),
       toggleLauncher: (open) =>
         set((s) => ({ launcherOpen: open ?? !s.launcherOpen })),
@@ -865,6 +869,7 @@ export const useOS = create<OSState>()(
         msnSeeded: s.msnSeeded,
         profileAvatar: s.profileAvatar,
         wallpaperColor: s.wallpaperColor,
+        y2k: s.y2k,
         soundEffects: s.soundEffects,
         windows: s.windows,
         focusedId: s.focusedId,

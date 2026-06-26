@@ -59,6 +59,8 @@ export function SettingsApp() {
   const setLauncherStyle = useOS((s) => s.setLauncherStyle);
   const wallpaperColor = useOS((s) => s.wallpaperColor);
   const setWallpaperColor = useOS((s) => s.setWallpaperColor);
+  const y2k = useOS((s) => s.y2k);
+  const setY2k = useOS((s) => s.setY2k);
   const gridSnap = useOS((s) => s.gridSnap);
   const setGridSnap = useOS((s) => s.setGridSnap);
   const soundEffects = useOS((s) => s.soundEffects);
@@ -145,6 +147,18 @@ export function SettingsApp() {
               ))}
             </div>
             {wallpaperColor && <button className="settings2-link" onClick={() => setWallpaperColor(null)}>Reset to theme default</button>}
+
+            <h2 className="settings2-h">Y2K effects</h2>
+            <p className="settings2-sub">Late-90s digital time-capsule extras — CRT scanlines, a boot screen, and the odd cosmetic glitch.</p>
+            <label className="settings2-row">
+              <span>
+                <span className="settings2-row-title">Y2K effects</span>
+                <span className="settings2-row-desc">Scanline overlay, boot-up screen, corner status readout and occasional hover glitches. Purely cosmetic.</span>
+              </span>
+              <button className={"toggle" + (y2k ? " is-on" : "")} role="switch" aria-checked={y2k} onClick={() => setY2k(!y2k)}>
+                <span className="toggle-knob" />
+              </button>
+            </label>
           </>
         )}
 
