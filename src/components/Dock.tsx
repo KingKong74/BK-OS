@@ -116,12 +116,12 @@ export function Dock() {
   return (
     <div className="dock" data-dock={dockStyle}>
       <button className="dock-launcher" aria-label="Start" onClick={() => toggleLauncher()}>
-        <AppIcon id="_start" size={18} />
+        <AppIcon id="_start" size={22} />
         <span className="dock-launcher-label">Start</span>
       </button>
       <DockSearch />
       <button className="dock-taskview" aria-label="Task view" onClick={() => toggleTaskView()}>
-        <Icon name="taskview" size={19} />
+        <Icon name="taskview" size={23} />
       </button>
 
       <span className="dock-divider" />
@@ -145,7 +145,7 @@ export function Dock() {
               onContextMenu={(e) => appMenu(e, id)}
             >
               <span className="dock-tile">
-                <AppIcon id={id} size={22} />
+                <AppIcon id={id} size={26} />
               </span>
             </button>
           );
@@ -180,7 +180,7 @@ export function Dock() {
                     ]);
                   }}
                 >
-                  {meta && <AppIcon id={w.appId} size={14} />}
+                  {meta && <AppIcon id={w.appId} size={17} />}
                   <span className="dock-task-label">{meta?.name}</span>
                 </button>
               );

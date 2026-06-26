@@ -2413,24 +2413,26 @@
   bottom: 0;
   top: auto;
   width: 100%;
+  height: 42px;          /* == DOCK_RESERVED; keep the two in sync */
+  box-sizing: border-box;
   transform: none;
   border-radius: 0;
   justify-content: flex-start;
   align-items: center;
   gap: 3px;
-  padding: 3px 4px;
+  padding: 0 5px;
 }
 [data-dock] .dock-launcher {
-  height: 26px;
+  height: 32px;
   border-radius: 0;
-  padding: 0 11px 0 7px;
-  gap: 6px;
+  padding: 0 13px 0 8px;
+  gap: 7px;
   font-weight: 700;
 }
 [data-dock] .dock-launcher-label { letter-spacing: 0.2px; }
 [data-dock] .dock-taskview {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 0;
   padding: 0;
   display: inline-flex;
@@ -2443,11 +2445,11 @@
 }
 [data-dock] .dock-pins { display: flex; align-items: center; gap: 2px; }
 [data-dock] .dock-app { padding: 0; }
-[data-dock] .dock-tile { width: 28px; height: 24px; border-radius: 0; }
+[data-dock] .dock-tile { width: 34px; height: 30px; border-radius: 0; }
 [data-dock] .dock-divider {
   display: block;
   width: 0;
-  height: 20px;
+  height: 26px;
   margin: 0 3px;
   background: transparent;
   border-left: 1px solid #808080;
@@ -2462,17 +2464,17 @@
   overflow: hidden;
 }
 [data-dock] .dock-task {
-  height: 24px;
+  height: 30px;
   border-radius: 0;
   border: none;
   max-width: 168px;
   min-width: 0;
   flex: 0 1 auto;
-  padding: 0 9px;
-  gap: 6px;
+  padding: 0 10px;
+  gap: 7px;
   font-size: 12px;
 }
-[data-dock] .dock-search { border-radius: 0; height: 24px; }
+[data-dock] .dock-search { border-radius: 0; height: 30px; }
 
 /* ---- win98 (silver) ---- */
 .dock[data-dock="win98"] {
