@@ -66,6 +66,19 @@ export const APP_ICONS: Record<string, ReactNode> = {
     </g>
   ),
 
+  // Games folder → an arcade joystick, distinct from the per-game icons.
+  games: (
+    <g shapeRendering="crispEdges">
+      <polygon points="6,28 26,28 23,21 9,21" fill="#3a4a8a" stroke="#000" />
+      <rect x="8" y="20" width="16" height="3" fill="#5a6ab0" stroke="#000" />
+      <circle cx="21" cy="24.5" r="1.5" fill="#f1c40f" stroke="#000" strokeWidth="0.5" />
+      <rect x="14" y="10" width="4" height="11" fill="#2a2a2a" stroke="#000" />
+      <rect x="14" y="10" width="2" height="11" fill="#4a4a4a" />
+      <circle cx="16" cy="8" r="5" fill="#e34234" stroke="#000" />
+      <circle cx="14" cy="6" r="1.6" fill="#ff8a7a" />
+    </g>
+  ),
+
   _start: (
     <g transform="translate(4 4) skewY(-14)">
       <rect x="0" y="0" width="11" height="11" fill="#e34234" />

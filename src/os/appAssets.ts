@@ -23,7 +23,8 @@ export const APP_ICON_IMG: Record<string, string> = {
   spider: "/icons/game_spider.png",
   hearts: "/icons/game_hearts.png",
   mine: "/icons/game_mine.png",
-  games: "/icons/game_hearts.png",
+  // NB: "games" deliberately has no PNG — it falls through to the hand-drawn
+  // joystick in appIcons.tsx so the Games folder reads distinct from Hearts.
   projects: "/icons/projects.png",
   photos: "/icons/pictures.png",
   calendar: "/icons/calendar.png",
