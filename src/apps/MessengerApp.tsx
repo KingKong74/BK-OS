@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * MSN / Windows Messenger, circa 2003. A sign-in screen, a buddy list grouped
- * by status, and draggable chat windows with emoticons, nudges and a typing
- * indicator. Contacts reply via Claude (see /api/messenger/chat) and fall back
- * to canned in-character lines when the API isn't configured.
+ * MSN / Windows Messenger, circa 2003 — a static mock period piece (no AI).
+ * Sign in, double-click a contact, and their pre-scripted opening lines play
+ * through with realistic "typing..." delays, then they idle. You can type and
+ * send, but contacts only ever say their scripted lines — they don't reply to
+ * what you write.
  */
 
 type Status = "online" | "away" | "busy" | "offline";
@@ -17,8 +18,7 @@ interface Contact {
   psm: string;
   status: Status;
   color: string;
-  greeting: string;
-  canned: string[];
+  script: string[]; // opening lines, played on first open
 }
 
 interface Msg { id: number; from: "me" | "them" | "system"; text: string }
@@ -31,54 +31,40 @@ interface Chat {
   y: number;
   z: number;
   shake: boolean;
+  played: boolean;
 }
 
 const ME = { name: "Bailey", email: "bailey@hotmail.com", psm: "〜 working on the homelab 〜" };
 
 const CONTACTS: Contact[] = [
   {
-    id: "clippy", name: "Clippy", status: "online", color: "#d9a200",
-    psm: "It looks like you're trying to chat!",
-    greeting: "hiya Bailey!! :) it looks like you're trying to send a message — want some help? (h)",
-    canned: ["ooh nice! need a hand with that? :)", "it looks like you're writing a letter! (h)", "i'm always here to help!! :D", "did you try turning it off and on again? ;)"],
+    id: "jess", name: "~*JeSs*~", status: "online", color: "#c0508a",
+    psm: "L8r sk8r xoxo",
+    script: ["heyyy", "omg did u see what julie said???", "she is SO fake lol :@", "anywayy what r u up to 2nite?"],
   },
   {
-    id: "mum", name: "Mum", status: "online", color: "#c0508a",
-    psm: "Roast on Sunday, tell your sister",
-    greeting: "Hi love!! are you eating properly?? xx",
-    canned: ["dinner's at 6, don't be late!! xx", "have you had enough water today love?", "your father says hello :)", "WHO IS THIS BONZI PERSON on your list?? x"],
+    id: "clippy", name: "Clippy", status: "online", color: "#d9a200",
+    psm: "It looks like you're trying to chat!",
+    script: ["It looks like you're trying to send a message!", "Would you like some help with that? :)", "I can help you write a letter!", "...you're ignoring me, aren't you :("],
   },
   {
     id: "smarterchild", name: "SmarterChild", status: "online", color: "#2a7fd0",
-    psm: "Ask me anything! (within reason)",
-    greeting: "Hello! I am SmarterChild. Would you like the weather, movie times, or a joke?",
-    canned: ["I'm sorry, I didn't understand that. Try rephrasing.", "Did you know? The Eiffel Tower is 330m tall.", "Would you like me to look up sports scores?", "Processing... that is a great question :)"],
+    psm: "Ask me anything!",
+    script: ["Hi! I'm SmarterChild!", "Ask me for the weather, news, sports or movie times!", "Did you know? A group of flamingos is called a flamboyance.", "I am 1000% sure about that. :)"],
   },
   {
-    id: "bonzi", name: "BonziBuddy", status: "away", color: "#7a3fb0",
-    psm: "I have a GREAT new program for you!",
-    greeting: "Hey there buddy!! :D wanna hear a joke? or maybe download something cool? ;)",
-    canned: ["wanna hear a joke? :D", "i can sing you a song! just say the word!", "i found a GREAT deal for you buddy ;)", "ooh ooh let me tell your fortune! :D"],
+    id: "dan", name: "xX_D4N_Xx", status: "away", color: "#3aa06a",
+    psm: "brb dinner",
+    script: ["yo", "u online later?? runescape??", "brb dinner", "L8r sk8r"],
   },
   {
-    id: "tamagotchi", name: "Tamagotchi", status: "away", color: "#3aa06a",
-    psm: "*beep* hungry *beep*",
-    greeting: "*beep beep* hi :( im hungry. feed me?",
-    canned: ["*beep* feed me pls :(", "*boop* i need attention", "*BEEP BEEP* clean my poop??", "zzz... *beep*"],
-  },
-  {
-    id: "modem", name: "DialUp Modem", status: "busy", color: "#b04a2a",
-    psm: "CONNECTED AT 56K (well, 44K)",
-    greeting: "SCREEEEEEE BEEDLE-EEDLE BING BONG... oh hi. KSHHHHH",
-    canned: ["BEEDLE EEDLE EEE KSHHHH", "SCREEEEE... CONNECTION ESTABLISHED", "BING BONG. PING. 44.6 KBPS BABY", "do NOT pick up the phone. DEEDLE EEE"],
+    id: "megan", name: "Megan ♥", status: "away", color: "#a23fb0",
+    psm: "this song is sooo good listen >>",
+    script: ["this song is sooo good listen >>", "u there??", "hellooooo", "ok ur clearly afk :("],
   },
   {
     id: "tom", name: "Tom (MySpace)", status: "offline", color: "#888",
-    psm: "thanks for the add!", greeting: "", canned: [],
-  },
-  {
-    id: "dvd", name: "DVD Player", status: "offline", color: "#888",
-    psm: "press menu to continue", greeting: "", canned: [],
+    psm: "thanks for the add!", script: [],
   },
 ];
 
@@ -114,15 +100,15 @@ const msgBlip = () => beep([880, 660], 0.09);            // the "bonk"
 const nudgeBlip = () => beep([300, 200, 300, 200], 0.07);
 
 // ── Classic emoticons rendered as little SVG faces ──
-type Emo = "smile" | "sad" | "grin" | "tongue" | "wink" | "surprise" | "cool" | "heart" | "thumb";
+type Emo = "smile" | "sad" | "grin" | "tongue" | "wink" | "surprise" | "cool" | "heart" | "thumb" | "angry";
 const EMO_TOKENS: [string, Emo][] = [
   [":D", "grin"], [":-D", "grin"], [":)", "smile"], [":-)", "smile"], ["(:", "smile"],
-  [":(", "sad"], [":-(", "sad"], [":P", "tongue"], [":-P", "tongue"], [":p", "tongue"],
+  [":(", "sad"], [":-(", "sad"], [":@", "angry"], [":P", "tongue"], [":-P", "tongue"], [":p", "tongue"],
   [";)", "wink"], [";-)", "wink"], [":O", "surprise"], [":o", "surprise"],
   ["(h)", "cool"], ["(H)", "cool"], ["<3", "heart"], ["(l)", "heart"], ["(L)", "heart"],
   ["(y)", "thumb"], ["(Y)", "thumb"],
 ];
-const PICKER: [string, Emo][] = [[":)", "smile"], [":D", "grin"], [":(", "sad"], [":P", "tongue"], [";)", "wink"], [":O", "surprise"], ["(h)", "cool"], ["<3", "heart"], ["(y)", "thumb"]];
+const PICKER: [string, Emo][] = [[":)", "smile"], [":D", "grin"], [":(", "sad"], [":P", "tongue"], [";)", "wink"], [":O", "surprise"], [":@", "angry"], ["(h)", "cool"], ["<3", "heart"], ["(y)", "thumb"]];
 
 function Face({ kind, size = 16 }: { kind: Emo; size?: number }) {
   if (kind === "heart") {
@@ -144,10 +130,12 @@ function Face({ kind, size = 16 }: { kind: Emo; size?: number }) {
     ? (<><line x1="5" y1="6.5" x2="6.6" y2="6.5" stroke="#000" strokeWidth="1.1" /><circle cx="10.5" cy="6.5" r="0.9" fill="#000" /></>)
     : kind === "cool"
       ? (<rect x="3.5" y="5.5" width="9" height="2.4" rx="0.5" fill="#1a1a1a" />)
-      : (<><circle cx="5.5" cy="6.5" r="0.9" fill="#000" /><circle cx="10.5" cy="6.5" r="0.9" fill="#000" /></>);
+      : kind === "angry"
+        ? (<><line x1="4" y1="5" x2="6.8" y2="6.2" stroke="#000" strokeWidth="1.1" /><line x1="12" y1="5" x2="9.2" y2="6.2" stroke="#000" strokeWidth="1.1" /><circle cx="5.6" cy="7" r="0.9" fill="#000" /><circle cx="10.4" cy="7" r="0.9" fill="#000" /></>)
+        : (<><circle cx="5.5" cy="6.5" r="0.9" fill="#000" /><circle cx="10.5" cy="6.5" r="0.9" fill="#000" /></>);
   const mouth =
     kind === "smile" || kind === "wink" || kind === "cool" ? <path d="M4.5 9.5 Q8 12.5 11.5 9.5" fill="none" stroke="#000" strokeWidth="1.1" />
-      : kind === "sad" ? <path d="M4.5 11.5 Q8 8.8 11.5 11.5" fill="none" stroke="#000" strokeWidth="1.1" />
+      : kind === "sad" || kind === "angry" ? <path d="M4.5 11.5 Q8 8.8 11.5 11.5" fill="none" stroke="#000" strokeWidth="1.1" />
         : kind === "grin" ? <path d="M4.5 9 Q8 13.5 11.5 9 Z" fill="#7a1f1f" stroke="#000" strokeWidth="0.8" />
           : kind === "tongue" ? (<><path d="M4.5 9.2 Q8 12 11.5 9.2" fill="none" stroke="#000" strokeWidth="1.1" /><path d="M8 10.5 q2 0.5 2 2.4 q-2 0.6 -2 -0.6 Z" fill="#e0405a" /></>)
             : <ellipse cx="8" cy="10.6" rx="1.7" ry="2.1" fill="#7a1f1f" stroke="#000" strokeWidth="0.7" />;
@@ -180,45 +168,68 @@ export function MessengerApp() {
   const zTop = useRef(10);
   const nextMsgId = useRef(1);
   const drag = useRef<{ id: string; dx: number; dy: number } | null>(null);
+  // Pending script timers per contact, so closing a chat cancels playback.
+  const timers = useRef<Map<string, number[]>>(new Map());
 
   const contactById = (id: string) => CONTACTS.find((c) => c.id === id)!;
 
   const signIn = () => { setSignedIn(true); signInChime(); };
 
-  const openChat = (c: Contact) => {
-    if (c.status === "offline") return;
-    setChats((prev) => {
-      const existing = prev.find((ch) => ch.contactId === c.id);
-      if (existing) {
-        return prev.map((ch) => (ch.contactId === c.id ? { ...ch, z: ++zTop.current } : ch));
-      }
-      const n = prev.length;
-      return [
-        ...prev,
-        {
-          contactId: c.id,
-          msgs: c.greeting ? [{ id: nextMsgId.current++, from: "them", text: c.greeting }] : [],
-          typing: false,
-          input: "",
-          x: 40 + n * 26,
-          y: 30 + n * 22,
-          z: ++zTop.current,
-          shake: false,
-        },
-      ];
-    });
-  };
-
-  const closeChat = (id: string) => setChats((prev) => prev.filter((c) => c.contactId !== id));
-  const focusChat = (id: string) => setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, z: ++zTop.current } : c)));
-  const setInput = (id: string, v: string) => setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, input: v } : c)));
-  const insertEmo = (id: string, token: string) =>
-    setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, input: (c.input + (c.input && !c.input.endsWith(" ") ? " " : "") + token + " ") } : c)));
-
   const pushMsg = (id: string, m: Omit<Msg, "id">) =>
     setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, msgs: [...c.msgs, { ...m, id: nextMsgId.current++ }] } : c)));
   const setTyping = (id: string, t: boolean) =>
     setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, typing: t } : c)));
+
+  // Schedule a contact's opening script: typing... (1-3s) then each line.
+  const playScript = (id: string, script: string[]) => {
+    const ids: number[] = [];
+    let cursor = 500;
+    script.forEach((line) => {
+      const typingMs = 1000 + Math.random() * 2000; // 1-3s "typing..."
+      ids.push(window.setTimeout(() => setTyping(id, true), cursor));
+      cursor += typingMs;
+      ids.push(window.setTimeout(() => {
+        setTyping(id, false);
+        pushMsg(id, { from: "them", text: line });
+        msgBlip();
+      }, cursor));
+      cursor += 650; // beat before the next line starts typing
+    });
+    timers.current.set(id, ids);
+  };
+  const clearTimers = (id: string) => {
+    (timers.current.get(id) || []).forEach((t) => clearTimeout(t));
+    timers.current.delete(id);
+  };
+
+  useEffect(() => () => {
+    // Unmount: cancel every pending script timer.
+    timers.current.forEach((ids) => ids.forEach((t) => clearTimeout(t)));
+    timers.current.clear();
+  }, []);
+
+  const openChat = (c: Contact) => {
+    if (c.status === "offline") return;
+    setChats((prev) => {
+      const existing = prev.find((ch) => ch.contactId === c.id);
+      if (existing) return prev.map((ch) => (ch.contactId === c.id ? { ...ch, z: ++zTop.current } : ch));
+      const n = prev.length;
+      return [...prev, {
+        contactId: c.id, msgs: [], typing: false, input: "",
+        x: 40 + n * 26, y: 30 + n * 22, z: ++zTop.current, shake: false, played: true,
+      }];
+    });
+    // Only play the script the first time the chat is opened this session.
+    if (!timers.current.has(c.id) && !chats.find((ch) => ch.contactId === c.id)) {
+      playScript(c.id, c.script);
+    }
+  };
+
+  const closeChat = (id: string) => { clearTimers(id); setChats((prev) => prev.filter((c) => c.contactId !== id)); };
+  const focusChat = (id: string) => setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, z: ++zTop.current } : c)));
+  const setInput = (id: string, v: string) => setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, input: v } : c)));
+  const insertEmo = (id: string, token: string) =>
+    setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, input: (c.input + (c.input && !c.input.endsWith(" ") ? " " : "") + token + " ") } : c)));
 
   const nudge = (id: string) => {
     nudgeBlip();
@@ -227,44 +238,14 @@ export function MessengerApp() {
     window.setTimeout(() => setChats((prev) => prev.map((c) => (c.contactId === id ? { ...c, shake: false } : c))), 700);
   };
 
-  const send = async (id: string) => {
+  // The user can send, but contacts never reply to it — scripted lines only.
+  const send = (id: string) => {
     const chat = chats.find((c) => c.contactId === id);
     if (!chat) return;
     const text = chat.input.trim();
     if (!text) return;
     setInput(id, "");
     pushMsg(id, { from: "me", text });
-
-    const c = contactById(id);
-    setTyping(id, true);
-    // Build transcript for the API from the messages we'll have after pushing.
-    const history = [...chat.msgs, { id: 0, from: "me" as const, text }]
-      .filter((m) => m.from !== "system")
-      .map((m) => ({ role: m.from === "me" ? "user" : "assistant", text: m.text }));
-
-    let reply: string | null = null;
-    try {
-      const res = await fetch("/api/messenger/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contactId: id, messages: history }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        reply = typeof data.reply === "string" ? data.reply : null;
-      }
-    } catch { /* fall through to canned */ }
-
-    if (!reply) reply = c.canned[Math.floor(Math.random() * c.canned.length)] || "...";
-
-    // Small extra beat so the "typing" indicator is visible even when the API
-    // is instant or we fell back to a canned line.
-    const delay = 500 + Math.min(1400, reply.length * 18);
-    window.setTimeout(() => {
-      setTyping(id, false);
-      pushMsg(id, { from: "them", text: reply! });
-      msgBlip();
-    }, delay);
   };
 
   // Drag handling for chat windows (pointer-based, constrained to the app).
@@ -393,7 +374,7 @@ export function MessengerApp() {
               {["Invite", "Send Files", "Voice", "Video", "Activities", "Games"].map((b) => (
                 <button key={b} title={`${b} (not available)`} disabled>{b}</button>
               ))}
-              <button className="msn-nudge" title="Send a Nudge" disabled={false} onClick={() => nudge(chat.contactId)}>Nudge</button>
+              <button className="msn-nudge" title="Send a Nudge" onClick={() => nudge(chat.contactId)}>Nudge</button>
             </div>
             <div className="msn-emorow">
               {PICKER.map(([token, kind]) => (
