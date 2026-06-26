@@ -197,6 +197,13 @@ export const APPS: AppManifest[] = [
     origin: "addon-external", visibility: "private", category: "productivity",
     description: "Claude AI — opens in a new tab.",
   },
+  {
+    id: "projects", name: "Projects", icon: "folder",
+    accent: "#caa46a", accentFg: "#000000",
+    url: "https://projects.bkos.dev", externalOnly: true,
+    origin: "addon-external", visibility: "private", category: "development",
+    description: "My projects — opens projects.bkos.dev in a new tab.",
+  },
 
   // ─── ADDON-EXTERNAL: social / external links (open in a new tab) ──
   // externalOnly because these sites block iframe embedding anyway.
