@@ -101,6 +101,7 @@ interface OSState {
   explorerView: ExplorerView;    // small / large icons / details (global default)
   externalAppMode: "new-tab" | "in-window"; // how addon-external apps launch
   socialsSeeded: boolean;        // one-time flag: social desktop shortcuts added
+  msnSeeded: boolean;            // one-time flag: MSN Messenger desktop shortcut added
   profileAvatar: { type: "preset" | "initials" | "custom"; value: string };
   wallpaperColor: string | null; // null = follow the theme's default wallpaper
   soundEffects: boolean;         // stub — UI only for now
@@ -303,6 +304,7 @@ export const useOS = create<OSState>()(
       explorerView: "large",
       externalAppMode: "new-tab",
       socialsSeeded: false,
+      msnSeeded: false,
       profileAvatar: { type: "initials", value: "BK" },
       wallpaperColor: null,
       soundEffects: false,
@@ -561,17 +563,29 @@ export const useOS = create<OSState>()(
             iconPositions: { ...s.iconPositions, [id]: { x: Math.max(0, x), y: Math.max(MENUBAR_H + 4, y) } },
           };
         }),
-      // One-time: add the default social desktop shortcuts. Gated by
-      // socialsSeeded so it runs once and won't re-add ones the user removed.
+      // One-time seeding of default desktop shortcuts. Each batch has its own
+      // flag so it runs once and won't re-add icons the user has removed —
+      // and so a new batch (e.g. MSN) reaches users who were already seeded.
       seedDefaultShortcuts: () =>
         set((s) => {
-          if (s.socialsSeeded) return {};
-          const SOCIALS = ["github", "instagram", "linkedin", "youtube"];
           const have = new Set(s.desktopShortcuts.map((d) => d.appId));
-          const toAdd = SOCIALS
-            .filter((id) => !have.has(id) && APP_MAP[id])
-            .map((id) => ({ id, appId: id }));
-          return { desktopShortcuts: [...s.desktopShortcuts, ...toAdd], socialsSeeded: true };
+          let desktopShortcuts = s.desktopShortcuts;
+          const patch: Partial<OSState> = {};
+          if (!s.socialsSeeded) {
+            const SOCIALS = ["github", "instagram", "linkedin", "youtube"];
+            const toAdd = SOCIALS
+              .filter((id) => !have.has(id) && APP_MAP[id])
+              .map((id) => ({ id, appId: id }));
+            desktopShortcuts = [...desktopShortcuts, ...toAdd];
+            patch.socialsSeeded = true;
+          }
+          if (!s.msnSeeded) {
+            if (!have.has("msn") && APP_MAP["msn"]) {
+              desktopShortcuts = [...desktopShortcuts, { id: "msn", appId: "msn" }];
+            }
+            patch.msnSeeded = true;
+          }
+          return { desktopShortcuts, ...patch };
         }),
       removeDesktopShortcut: (id) =>
         set((s) => {
@@ -848,6 +862,7 @@ export const useOS = create<OSState>()(
         explorerView: s.explorerView,
         externalAppMode: s.externalAppMode,
         socialsSeeded: s.socialsSeeded,
+        msnSeeded: s.msnSeeded,
         profileAvatar: s.profileAvatar,
         wallpaperColor: s.wallpaperColor,
         soundEffects: s.soundEffects,

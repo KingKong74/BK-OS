@@ -205,6 +205,16 @@ export const APPS: AppManifest[] = [
     description: "My projects — opens projects.bkos.dev in a new tab.",
   },
 
+  // ─── ADDON-NATIVE: social ──────────────────────────────────
+  {
+    id: "msn", name: "MSN Messenger", icon: "globe",
+    accent: "#1f7fd6", accentFg: "#ffffff",
+    defaultSize: { width: 760, height: 560 },
+    origin: "addon-native", visibility: "private", category: "social",
+    description: "Windows Messenger — sign in and chat with your contacts.",
+    commands: [{ id: "open", label: "Open MSN Messenger" }],
+  },
+
   // ─── ADDON-EXTERNAL: social / external links (open in a new tab) ──
   // externalOnly because these sites block iframe embedding anyway.
   {

@@ -16,6 +16,7 @@ import { HelpApp } from "@/apps/HelpApp";
 import { NotepadApp } from "@/apps/NotepadApp";
 import { SettingsApp } from "@/apps/SettingsApp";
 import { InfrastructureApp } from "@/apps/InfrastructureApp";
+import { MessengerApp } from "@/apps/MessengerApp";
 import { PlaceholderApp } from "@/apps/PlaceholderApp";
 import { WebApp } from "@/components/WebApp";
 
@@ -39,6 +40,7 @@ const COMPONENTS: Record<string, ComponentType> = {
   notepad: NotepadApp,
   settings: SettingsApp,
   infrastructure: InfrastructureApp,
+  msn: MessengerApp,
 };
 
 export function renderApp(appId: string) {
