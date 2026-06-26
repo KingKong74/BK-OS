@@ -2018,3 +2018,144 @@ input:focus-visible,
 .msn-inputrow textarea { flex: 1; resize: none; height: 42px; font: inherit; font-size: 12px; padding: 5px 7px; border: 1px solid #9bb4d4; border-radius: 2px; }
 .msn-send { width: 58px; font: inherit; font-size: 12px; font-weight: 700; color: #fff; border: 1px solid #0f5aa8; border-radius: 3px; background: linear-gradient(#3a9be8, #1f7fd6); cursor: pointer; }
 .msn-send:hover { background: linear-gradient(#4aa9f2, #2a8be0); }
+
+/* ============================================================
+   Classic Win98 Start menu
+   ============================================================ */
+.launcher-overlay[data-launcher="classic"] {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 0 0 64px 2px;
+  background: transparent;
+}
+.cmenu {
+  display: flex;
+  min-width: 220px;
+  max-height: 78vh;
+  background: #c0c0c0;
+  color: #000;
+  border: 1px solid #000;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #808080, 2px 2px 6px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  position: relative;
+}
+.cmenu-sidebar {
+  width: 32px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(to top, #16307a, #0a1650);
+}
+.cmenu-brand {
+  transform: rotate(-90deg);
+  white-space: nowrap;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: #aebbe6;
+}
+.cmenu-brand b { color: #fff; font-weight: 800; }
+.cmenu-brand-light { font-weight: 400; }
+
+.cmenu-items { flex: 1; padding: 2px; display: flex; flex-direction: column; }
+.cmenu-rowwrap { position: relative; }
+.cmenu-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 5px 8px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: #000;
+  cursor: pointer;
+  text-align: left;
+}
+.cmenu-row:hover, .cmenu-row.is-open { background: #000080; color: #fff; }
+.cmenu-icon { width: 26px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.cmenu-label { flex: 1; white-space: nowrap; }
+.cmenu-arrow { font-size: 10px; opacity: 0.8; }
+.cmenu-sep { height: 0; margin: 3px 2px; border-top: 1px solid #808080; border-bottom: 1px solid #fff; }
+
+/* Fly-out submenus */
+.cmenu-flyout {
+  position: absolute;
+  left: 100%;
+  top: -3px;
+  min-width: 180px;
+  max-height: 74vh;
+  overflow-y: auto;
+  background: #c0c0c0;
+  border: 1px solid #000;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #808080, 2px 2px 6px rgba(0, 0, 0, 0.4);
+  padding: 2px;
+  z-index: 5;
+}
+.cmenu-subhead { font-size: 10px; font-weight: 700; color: #404040; padding: 4px 8px 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.cmenu-subrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 4px 10px 4px 8px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: #000;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+.cmenu-subrow:hover { background: #000080; color: #fff; }
+.cmenu-subicon { width: 20px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.cmenu-empty { padding: 6px 12px; color: #606060; font-style: italic; }
+
+/* Run dialog */
+.cmenu-run {
+  position: fixed;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  background: #c0c0c0;
+  border: 1px solid #000;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #808080, 3px 3px 10px rgba(0, 0, 0, 0.5);
+  z-index: 30;
+}
+.cmenu-run-title { display: flex; align-items: center; justify-content: space-between; padding: 3px 4px 3px 7px; background: linear-gradient(#000080, #1060b0); color: #fff; font-weight: 700; font-size: 12px; }
+.cmenu-run-x { width: 17px; height: 15px; border: 1px solid #fff; background: #c0c0c0; color: #000; font-size: 9px; cursor: pointer; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
+.cmenu-run-body { padding: 12px 14px 14px; }
+.cmenu-run-hint { font-size: 12px; margin: 0 0 12px; line-height: 1.4; }
+.cmenu-run-field { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.cmenu-run-field input { flex: 1; font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid #808080; box-shadow: inset 1px 1px #404040; background: #fff; color: #000; }
+.cmenu-run-error { color: #8b1a1a; font-size: 11px; margin: 8px 0 0; }
+.cmenu-run-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.cmenu-run-actions button {
+  min-width: 72px; padding: 4px 10px; font: inherit; font-size: 12px; color: #000;
+  background: #c0c0c0; border: 1px solid #000; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; cursor: pointer;
+}
+.cmenu-run-actions button:active { box-shadow: inset -1px -1px #fff, inset 1px 1px #808080; }
+
+/* ── Night theme ── */
+[data-scene="win98-dark"] .cmenu,
+[data-scene="win98-dark"] .cmenu-flyout,
+[data-scene="win98-dark"] .cmenu-run {
+  background: #2a2a32;
+  color: #e8e8ea;
+  box-shadow: inset 1px 1px #4a4a52, inset -1px -1px #14141a, 2px 2px 6px rgba(0, 0, 0, 0.6);
+}
+[data-scene="win98-dark"] .cmenu-row,
+[data-scene="win98-dark"] .cmenu-subrow { color: #e8e8ea; }
+[data-scene="win98-dark"] .cmenu-row:hover,
+[data-scene="win98-dark"] .cmenu-row.is-open,
+[data-scene="win98-dark"] .cmenu-subrow:hover { background: #1a3a6a; color: #fff; }
+[data-scene="win98-dark"] .cmenu-sep { border-top-color: #14141a; border-bottom-color: #4a4a52; }
+[data-scene="win98-dark"] .cmenu-subhead { color: #9aa0ac; }
+[data-scene="win98-dark"] .cmenu-run-field input { background: #16161c; color: #e8e8ea; border-color: #14141a; box-shadow: inset 1px 1px #000; }
+[data-scene="win98-dark"] .cmenu-run-actions button,
+[data-scene="win98-dark"] .cmenu-run-x { background: #2a2a32; color: #e8e8ea; box-shadow: inset 1px 1px #4a4a52, inset -1px -1px #14141a; }

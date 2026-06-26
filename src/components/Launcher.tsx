@@ -7,6 +7,7 @@ import type { AppCategory } from "@/os/types";
 import { Icon } from "./Icon";
 import { AppIcon } from "./AppIcon";
 import { Avatar } from "./Avatar";
+import { ClassicStartMenu } from "./ClassicStartMenu";
 import { searchAll } from "@/hooks/useFs";
 import { getClientMode } from "@/lib/mode";
 import UserStatusBar from '@/components/UserStatusBar';
@@ -123,6 +124,14 @@ export function Launcher() {
       </button>
     );
   };
+
+  if (launcherStyle === "classic") {
+    return (
+      <div className="launcher-overlay" data-launcher="classic" onClick={close}>
+        <ClassicStartMenu panelRef={launcherRef} onClose={close} />
+      </div>
+    );
+  }
 
   return (
     <div
