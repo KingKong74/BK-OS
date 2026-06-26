@@ -95,6 +95,8 @@ export function DesktopIcons() {
   const [renaming, setRenaming] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [desktopFolderId, setDesktopFolderId] = useState<string | null | undefined>(undefined);
+  // A just-created icon id waiting to enter rename mode once it shows up.
+  const [pendingRename, setPendingRename] = useState<string | null>(null);
 
   // Resolve the Desktop folder id from the server fs on mount.
   useEffect(() => {
@@ -114,6 +116,18 @@ export function DesktopIcons() {
     window.addEventListener("bkos:fs-refresh", handler);
     return () => window.removeEventListener("bkos:fs-refresh", handler);
   }, [refreshServer]);
+
+  // A freshly-created desktop item (New folder / New text document) should drop
+  // straight into rename mode. We can't rename until the icon actually exists in
+  // the list, so remember its id here and the effect below acts once it appears.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const id = (e as CustomEvent<{ id: string }>).detail?.id;
+      if (id) setPendingRename(id);
+    };
+    window.addEventListener("bkos:fs-created", handler);
+    return () => window.removeEventListener("bkos:fs-created", handler);
+  }, []);
 
   const drag = useRef<{ x: number; y: number; ox: number; oy: number; moved: boolean; cx: number; cy: number } | null>(null);
   const renameTimer = useRef<number | null>(null);
@@ -153,6 +167,19 @@ export function DesktopIcons() {
     setRenaming(id);
     setDraft(currentLabel);
   };
+
+  // Once a freshly-created item shows up in the server children, select it and
+  // drop it into rename mode (mirrors Windows creating "New folder" selected
+  // and editable). Runs when the desktop children refresh after creation.
+  useEffect(() => {
+    if (!pendingRename) return;
+    const node = serverChildren.find((n) => `srv:${n.id}` === pendingRename);
+    if (!node) return;
+    setSelected(pendingRename);
+    startRename(pendingRename, node.name);
+    setPendingRename(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingRename, serverChildren]);
   const commitRename = () => {
     if (renaming) {
       const item = items.find((it) => it.id === renaming);

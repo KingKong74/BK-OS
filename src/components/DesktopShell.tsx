@@ -74,9 +74,12 @@ export function DesktopShell() {
       const node = await createFsNode(desktopId, name, type, kind, type === "file" ? "" : undefined);
       // Position the new icon near the click location
       setIconPosition(`srv:${node.id}`, clientX - 40, clientY - 40);
-      // The DesktopIcons component will pick up the new child on next refresh tick;
-      // a manual reload helps ensure freshness.
+      // Refresh the desktop, then ask DesktopIcons to drop the freshly-created
+      // icon straight into inline rename mode (native Windows behaviour — the
+      // icon appears selected with an editable label, ready to be named). It
+      // does NOT auto-open Explorer/Notepad.
       window.dispatchEvent(new CustomEvent("bkos:fs-refresh"));
+      window.dispatchEvent(new CustomEvent("bkos:fs-created", { detail: { id: `srv:${node.id}` } }));
     } catch (e) {
       console.error("create failed:", e);
     }
