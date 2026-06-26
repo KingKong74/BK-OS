@@ -120,18 +120,6 @@ export function DesktopShell() {
             { label: "Tidy icons", icon: "grid", onSelect: () => resetIconPositions() },
           ]);
         }}
-        onDragOver={(e) => {
-          if (e.dataTransfer.types.includes("application/x-bailey-app")) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "copy";
-          }
-        }}
-        onDrop={(e) => {
-          const appId = e.dataTransfer.getData("application/x-bailey-app");
-          if (!appId) return;
-          e.preventDefault();
-          addDesktopShortcut(appId, e.clientX - 36, e.clientY - 36);
-        }}
       >
         <DesktopIcons />
         <StickyNotes />

@@ -194,14 +194,6 @@ input {
   background: rgba(10, 12, 18, 0.4);
   padding: 24px;
 }
-.launcher-overlay.is-dragging {
-  background: transparent;
-  pointer-events: none;
-}
-.launcher.is-dragging {
-  opacity: 0.35;
-  pointer-events: none;
-}
 .launcher {
   width: 720px;
   max-width: 100%;
@@ -1404,23 +1396,6 @@ input:focus-visible,
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
-/* ============ Launcher drag ghost ============ */
-.launcher-drag-ghost {
-  position: fixed;
-  z-index: 2147483099;
-  pointer-events: none;
-  width: 48px;
-  height: 48px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px dashed #555;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.25);
-}
-.launcher-overlay.is-dragging { background: rgba(10, 12, 18, 0.18); }
-.launcher.is-ghost-active { opacity: 0.5; }
 
 /* ============ Explorer entry rename ============ */
 .exp-rename-wrap {
@@ -1930,6 +1905,3 @@ input:focus-visible,
 .term-line.term-ok { color: #5fd75f; }
 .term-line.term-accent { color: #56d7d7; }
 .term-line.term-dim { color: #6f8a78; }
-
-/* Launcher tile being dragged to the desktop (native DnD) */
-.launcher-app.is-dragging { opacity: 0.4; }

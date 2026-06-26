@@ -33,7 +33,6 @@ export function Launcher() {
   const openApp = useOS((s) => s.openApp);
   const launcherStyle = useOS((s) => s.launcherStyle);
   const toggleLauncher = useOS((s) => s.toggleLauncher);
-  const addDesktopShortcut = useOS((s) => s.addDesktopShortcut);
   const setVaultInitialPath = useOS((s) => s.setVaultInitialPath);
   const lock = useOS((s) => s.lock);
   const sleep = useOS((s) => s.sleep);
@@ -46,7 +45,6 @@ export function Launcher() {
     notes: Array<{ id: string; title: string | null; preview: string }>;
   }>({ files: [], notes: [] });
   const [powerOpen, setPowerOpen] = useState(false);
-  const [dragId, setDragId] = useState<string | null>(null);
   const launcherRef = useRef<HTMLDivElement | null>(null);
   const mode = getClientMode();
 
@@ -110,46 +108,12 @@ export function Launcher() {
   const doShutdown = () => { close(); shutdown(); };
   const doRestart = () => { close(); restart(); };
 
-  // Native HTML5 drag of an app tile onto the desktop → creates a shortcut.
-  const onTileDragStart = (e: React.DragEvent, id: string) => {
-    e.dataTransfer.setData("application/x-bailey-app", id);
-    e.dataTransfer.effectAllowed = "copy";
-    setDragId(id);
-  };
-
-  // Drop handling lives on the overlay: while the launcher is open it covers
-  // the whole screen, so a drop "on the desktop" lands on the overlay backdrop
-  // (outside the panel). Dropping on the panel or over the dock cancels.
-  const onOverlayDragOver = (e: React.DragEvent) => {
-    if (e.dataTransfer.types.includes("application/x-bailey-app")) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
-    }
-  };
-  const onOverlayDrop = (e: React.DragEvent) => {
-    const id = e.dataTransfer.getData("application/x-bailey-app");
-    setDragId(null);
-    if (!id) return;
-    e.preventDefault();
-    if ((e.target as HTMLElement).closest(".launcher")) return; // on the panel → cancel
-    const dock = document.querySelector(".dock");
-    if (dock) {
-      const r = dock.getBoundingClientRect();
-      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return; // on the dock → cancel
-    }
-    addDesktopShortcut(id, e.clientX - 36, e.clientY - 36);
-    close();
-  };
-
   const Tile = ({ id }: { id: string }) => {
     const meta = APPS.find((a) => a.id === id);
     if (!meta) return null;
     return (
       <button
-        className={"launcher-app" + (dragId === id ? " is-dragging" : "")}
-        draggable
-        onDragStart={(e) => onTileDragStart(e, id)}
-        onDragEnd={() => setDragId(null)}
+        className="launcher-app"
         onClick={() => { openApp(id); close(); }}
       >
         <span className="launcher-tile">
@@ -165,8 +129,6 @@ export function Launcher() {
       className="launcher-overlay"
       data-launcher={launcherStyle}
       onClick={close}
-      onDragOver={onOverlayDragOver}
-      onDrop={onOverlayDrop}
     >
       <div
         ref={launcherRef}
