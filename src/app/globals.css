@@ -24,6 +24,32 @@ body {
 }
 .os-root { cursor: url("/cursors/arrow.png") 0 0, default; }
 
+/* ---------- Loading hourglass (BusyCursor) ---------- */
+.bkos-hourglass {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 22px;
+  z-index: 2147483600;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+}
+.bkos-hourglass .hg-top { transform-box: fill-box; transform-origin: center top; animation: hg-drain 1.1s linear infinite; }
+.bkos-hourglass .hg-bot { transform-box: fill-box; transform-origin: center bottom; animation: hg-fill 1.1s linear infinite; }
+.bkos-hourglass .hg-stream { animation: hg-stream 1.1s linear infinite; }
+@keyframes hg-drain { 0% { transform: scaleY(1); } 92%, 100% { transform: scaleY(0); } }
+@keyframes hg-fill { 0% { transform: scaleY(0); } 92%, 100% { transform: scaleY(1); } }
+@keyframes hg-stream { 0%, 100% { opacity: 0; } 15%, 85% { opacity: 0.9; } }
+
+/* Reduced-motion: drop the trailing element and swap in a static
+   arrow+hourglass cursor while loading instead. */
+@media (prefers-reduced-motion: reduce) {
+  .bkos-hourglass { display: none; }
+  body.bkos-busy,
+  body.bkos-busy * { cursor: url("/cursors/wait.png") 0 0, progress !important; }
+}
+
 button,
 input {
   font-family: inherit;

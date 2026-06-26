@@ -9,6 +9,7 @@ import { LockScreen } from "./LockScreen";
 import { PoweredOff } from "./PoweredOff";
 import { RestartSequence } from "./RestartSequence";
 import { ShutdownSequence } from "./ShutdownSequence";
+import { BusyCursor } from "./BusyCursor";
 
 export function OS() {
   const scene = useOS((s) => s.scene);
@@ -52,6 +53,7 @@ export function OS() {
           {locked && <LockScreen />}
           {restartPhase !== "off" && <RestartSequence />}
           {shutdownPhase !== "off" && <ShutdownSequence />}
+          <BusyCursor />
         </>
       )}
     </div>
